@@ -17,11 +17,14 @@
             </tr>
         </table>
         {{msg}}
+        <button @click="tests()"></button>
     </div>
 </template>
 <script>
+    const axios = require('axios').default;
+
     export default {
-        name: "Test",
+        name: "Test.vue",
         data() {
             return {
                 msg: 'hello',
@@ -45,10 +48,7 @@
             }
         },
         created() {
-
-            this.axios
-                .get("http://localhost:8888/tests")
-                .then((resp) => {
+            axios.get("http://localhost:8888/tests").then((resp) => {
                     console.log(resp);
                 })
                 .catch((error) => {

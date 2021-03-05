@@ -48,6 +48,7 @@
             }
         },
         created() {
+            // const _this = this;
             axios.get("http://localhost:8888/tests").then((resp) => {
                     console.log(resp);
                     this.users = resp.data.records;

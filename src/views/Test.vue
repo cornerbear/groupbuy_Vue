@@ -17,7 +17,7 @@
             </tr>
         </table>
         {{msg}}
-        <button @click="tests()"></button>
+        <el-button type="primary" @click="tests()"></el-button>
     </div>
 </template>
 <script>

@@ -5,17 +5,12 @@ const routes = [
   {
     path: '/',
     name: '管理员主页面',
-    component: () => import('../views/admin/Index.vue'),
+    component: () => import('../views/background/Index'),
     children: [
       {
-        path: 'menu1',
-        name: '页面1',
-        component: () => import('../views/PageOne'),
-      },
-      {
-        path: '/pageTwo',
-        name: '页面2',
-        component: () => import('../views/PageTwo')
+        path: 'goods',
+        name: '商品管理',
+        component: () => import('../views/background/Goods'),
       }
     ]
   },
@@ -35,14 +30,7 @@ const routes = [
   {
     path: '/test',
     name: 'Test',
-    component: () => import('../views/Test.vue'),
-    children: [
-      {
-        path: '/pageThree',
-        name: '页面3',
-        component: () => import('../views/PageThree')
-      }
-    ]
+    component: () => import('../views/background/Test.vue'),
   }
 ]
 

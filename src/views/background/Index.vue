@@ -17,7 +17,7 @@
       <el-container>
         <!-- 菜单栏 -->
         <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
-          <el-menu router>
+          <el-menu router :default-active="this.$route.name">
             <el-submenu v-for="(item,index) in $router.options.routes" :index="String(index)">
               <template #title><i class="el-icon-setting"></i>{{item.name}}</template>
               <el-menu-item v-for="(item2,index2) in item.children" :index="item2.path">{{item2.name}}</el-menu-item>

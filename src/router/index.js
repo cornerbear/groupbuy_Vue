@@ -11,6 +11,11 @@ const routes = [
         path: 'goods',
         name: '商品管理',
         component: () => import('../views/background/Goods'),
+      },
+      {
+        path: 'category',
+        name: '类别管理',
+        component: () => import('../views/background/Category'),
       }
     ]
   },

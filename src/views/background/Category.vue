@@ -77,13 +77,9 @@
         },
         methods: {
             getlist() {
-                axios.get("/admin/categoryAll").then((res) => {
-                    console.log(res)
-                    this.treeData = this.arraytotree(res.data);
+                axios.get("/admin/categoryTree").then((res) => {
+                    this.treeData = res.data.data;
                     this.selectData = this.treeData;
-                    console.log(this.treeData);
-                    console.log("this.selectData : -----------")
-                    console.log(this.selectData);
                 })
             },
             handleNodeClick(data) {

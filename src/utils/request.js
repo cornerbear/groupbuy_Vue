@@ -1,11 +1,14 @@
 import axios from 'axios'
-import 'element-plus/lib/theme-chalk/index.css'
 import { ElMessage } from 'element-plus'
 
 //创建axios的一个实例 
 var instance = axios.create({
     baseURL:'http://localhost:8888/',//接口统一域名
-    timeout: 6000                    //设置超时
+    timeout: 6000,                    //设置超时
+    default: {
+        baseURL:'http://localhost:8888/',
+        timeout: 6000,                    
+    }
 })
 
 instance.interceptors.request.use(config => {

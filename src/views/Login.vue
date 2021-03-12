@@ -25,17 +25,18 @@
 
 <script>
 
-    import { login } from '../api/common'
+    import { login } from '@/api/common'
+    const axios = require('axios').default;
 
     export default {
         name: "Login",
         data() {
             return {
                 loading: false,
-                vcUrl: '/verifyCode?time=' + new Date(),
+                vcUrl: 'http://localhost:8888/verifyCode?time=' + new Date(),
                 loginForm: {
                     username: 'admin',
-                    password: '123',
+                    password: '123456',
                     code: ''
                 },
                 checked: true,
@@ -48,23 +49,24 @@
         },
         methods: {
             updateVerifyCode() {
-                this.vcUrl = '/verifyCode?time=' + new Date();
+                this.vcUrl = 'http://localhost:8888/verifyCode?time=' + new Date();
             },
             submitLogin() {
                 this.$refs.loginForm.validate((valid) => {
                     if (valid) {
-                        this.loading = true;
-                        console.log(21);
-                        login(this.loginForm).then((resp) => {
+                        // this.loading = true;
+                        console.log(this.loginForm);
+                        this.login(this.loginForm).then((resp) => {
+                        // axios.post("/doLogin",this.loginForm).then((resp) => {
                             console.log(1);
-                            this.loading = false;
+                            // this.loading = false;
                             if (resp) {
                                 this.$store.commit('INIT_CURRENTHR', resp.obj);
                                 window.sessionStorage.setItem("user", JSON.stringify(resp.obj));
                                 let path = this.$route.query.redirect;
                                 this.$router.replace((path == '/' || path == undefined) ? '/home' : path);
                             } else {
-                                this.vcUrl = '/verifyCode?time=' + new Date();
+                                this.vcUrl = 'http://localhost:8888/verifyCode?time=' + new Date();
                             }
                         })
                     } else {

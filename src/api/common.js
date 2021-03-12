@@ -25,8 +25,8 @@ export function getBookList(obj) {
 }
 export function login(obj) {
     return request({
-        url: '/login',      // url = base url + request url
-        method: 'get',
+        url: '/doLogin',      // url = base url + request url
+        method: 'post',
         params: obj,    //----------------->>>区别
     })
 }

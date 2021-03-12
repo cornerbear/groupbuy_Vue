@@ -92,18 +92,14 @@
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
                         console.log(this.formModel);
-                        axios.post("/admin/goods", this.formModel).then((resp) => {
-                            console.log(resp.data);
-                            if (resp.data.success) {
+                        axios.post("/admin/goods", this.formModel).then((res) => {
+                            if (res.data.success) {
                                 this.dialogFormVisible = false;
-                                this.$message(resp.data.msg);
+                                this.$message(res.data.msg);
                             } else {
-                                this.$message(resp.data.msg);
+                                this.$message(res.data.msg);
                             }
                         })
-                            .catch((error) => {
-                                console.log(error);
-                            });
                     } else {
                         console.log('error submit!!');
                         return false;

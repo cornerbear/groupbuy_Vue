@@ -3,12 +3,6 @@ import Home from '../views/Home.vue'
 
 const routes = [
   {
-      path: '/',
-      name: 'Login',
-      component: () => import('../views/Login'),
-      hidden: true
-  },
-  {
     path: '/',
     name: '管理员主页面',
     component: () => import('../views/background/Index'),

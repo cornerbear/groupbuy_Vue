@@ -1,16 +1,15 @@
 <template>
     <!--tree-->
     <!-- <el-card> -->
-    <el-button type="primary" round @click="dialogFormVisible = true">新增菜单</el-button>
     <el-tree :props="treeProps" :data="treeData" show-checkbox node-key="id" :default-expand-all="false"
         :expand-on-click-node="false">
         <template #default="{ node, data }">
             <span class="custom-tree-node">
                 <span>{{node.label}}</span>
                 <span>
-                    <!-- <el-button type="text" size="mini" @click="() => append(node,data)">
+                    <el-button type="text" size="mini" @click="() => append(node,data)">
                         增加
-                    </el-button> -->
+                    </el-button>
                     <el-button type="text" size="mini" @click="() => remove(node, data)">
                         删除
                     </el-button>
@@ -29,8 +28,7 @@
                 <el-input v-model="formModel.catName" autocomplete="off"></el-input>
             </el-form-item>
             <el-form-item label="父类别" prop="parentCatId" :label-width="formLabelWidth">
-                <el-cascader v-model="formModel.parentCatId" :options="selectData" :props="selectProps" clearable
-                    placeholder="若为根节点，则不选择" separator=" | " style="width:350px"></el-cascader>
+                <el-cascader v-model="formModel.parentCatId" :options="selectData" :props="selectProps" clearable placeholder="若为根节点，则不选择"></el-cascader>
             </el-form-item>
             <el-form-item label="序号" prop="sort" :label-width="formLabelWidth">
                 <el-input v-model="formModel.sort" autocomplete="off"></el-input>
@@ -72,9 +70,6 @@
                     label: 'catName',
                 },
                 formLabelWidth: '120px',
-                rules : {
-                    
-                }
             }
         },
         created() {
@@ -117,22 +112,12 @@
 
             append(node, data) {
                 this.dialogFormVisible = true;
-
+                
             },
-            addCategory(form) {
-                if (this.formModel.parentCatId != null) {
-                    this.formModel.parentCatId = this.formModel.parentCatId[this.formModel.parentCatId.length - 1];
-                } else {
-                    this.formModel.parentCatId = 0;
-                }
-                axios.post("/admin/category", this.formModel).then((res) => {
-                    if (res.data.success) {
-                        this.dialogFormVisible = false;
-                        this.$message(res.data.msg);
-                    } else {
-                        this.$message(res.data.msg);
-                    }
-                    window.location.reload();
+            addCategory(form){
+                this.formModel.parentCatId = this.formModel.parentCatId[this.formModel.parentCatId.length - 1];
+                axios.post("/admin/category",this.formModel).then((res) => {
+                    console.log(res)
                 })
             },
 

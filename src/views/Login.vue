@@ -51,19 +51,9 @@
             submitLogin() {
                 this.$refs.loginForm.validate((valid) => {
                     if (valid) {
-<<<<<<< HEAD
-                        // this.loading = true;
-                        console.log(this.loginForm);
-                        // this.login(this.loginForm).then((resp) => {
-                        this.postRequest("/doLogin", {
-                            username: this.loginForm.username,
-                            password: this.loginForm.password
-                        }).then((resp) => {
-=======
                         this.loading = true;
                         console.log(21);
                         login(this.loginForm).then((resp) => {
->>>>>>> parent of 382bc94 (0.0.10 封装axios未完成 0.2)
                             console.log(1);
                             this.loading = false;
                             if (resp) {

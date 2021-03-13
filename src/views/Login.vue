@@ -33,7 +33,7 @@
                 vcUrl: 'http://localhost:8888/verifyCode?time=' + new Date(),
                 loginForm: {
                     username: 'admin',
-                    password: '123456',
+                    password: '123',
                     code: ''
                 },
                 checked: true,
@@ -59,7 +59,7 @@
                             password: this.loginForm.password
                         }).then((resp) => {
                             console.log(1);
-                            // this.loading = false;
+                            this.loading = false;
                             if (resp) {
                                 this.$store.commit('INIT_CURRENTHR', resp.obj);
                                 window.sessionStorage.setItem("user", JSON.stringify(resp.obj));

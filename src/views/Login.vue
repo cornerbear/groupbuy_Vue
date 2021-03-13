@@ -25,9 +25,6 @@
 
 <script>
 
-    import { login } from '@/api/common'
-    const axios = require('axios').default;
-
     export default {
         name: "Login",
         data() {
@@ -56,8 +53,11 @@
                     if (valid) {
                         // this.loading = true;
                         console.log(this.loginForm);
-                        this.login(this.loginForm).then((resp) => {
-                        // axios.post("/doLogin",this.loginForm).then((resp) => {
+                        // this.login(this.loginForm).then((resp) => {
+                        this.postRequest("/doLogin", {
+                            username: this.loginForm.username,
+                            password: this.loginForm.password
+                        }).then((resp) => {
                             console.log(1);
                             // this.loading = false;
                             if (resp) {

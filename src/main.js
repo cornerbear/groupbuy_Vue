@@ -9,10 +9,16 @@ const app = createApp(App)
 installElementPlus(app)
 app.use(store).use(router).mount('#app')
 
-// app.prototype.getRequest = getRequest;
-// app.prototype.postRequest = postRequest;
-// app.prototype.deleteRequest = deleteRequest;
-// app.prototype.putRequest = putRequest;
+import { getRequest } from './utils/request'
+import {postRequest} from './utils/request'
+import {deleteRequest} from './utils/request'
+import {putRequest} from './utils/request'
+
+
+app.config.globalProperties.getRequest = getRequest;
+app.config.globalProperties.postRequest = postRequest;
+app.config.globalProperties.deleteRequest = deleteRequest;
+app.config.globalProperties.putRequest = putRequest;
 
 // app.prototype.$base_url = 'http://localhost:8888';
 axios.defaults.baseURL = 'http://localhost:8888';

@@ -46,7 +46,6 @@
 <script>
 
     const axios = require('axios').default;
-    import { getList } from "../../api/category"
 
     export default {
         name: "Category",
@@ -78,7 +77,7 @@
         },
         methods: {
             getlist() {
-                getList().then((res) => {
+                axios.post("/admin/categoryTree").then((res) => {
                     this.treeData = res.data.data;
                     this.selectData = this.treeData;
                 })

@@ -11,17 +11,17 @@ const routes = [
   {
     path: '/',
     name: '管理员主页面',
-    component: () => import('../views/background/Index'),
+    component: () => import('../views/admin/Index'),
     children: [
       {
         path: 'goods',
         name: '商品管理',
-        component: () => import('../views/background/Goods'),
+        component: () => import('../views/admin/Goods'),
       },
       {
         path: 'category',
         name: '类别管理',
-        component: () => import('../views/background/Category'),
+        component: () => import('../views/admin/Category'),
       }
     ]
   },
@@ -41,7 +41,7 @@ const routes = [
   {
     path: '/test',
     name: 'Test',
-    component: () => import('../views/background/Test.vue'),
+    component: () => import('../views/admin/Test.vue'),
   }
 ]
 

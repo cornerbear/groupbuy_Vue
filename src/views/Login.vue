@@ -11,20 +11,20 @@
                 class="loginContainer">
             <h3 class="loginTitle">系统登录</h3>
             <el-form-item prop="username">
-                <el-input size="normal" type="text" v-model="loginForm.username" auto-complete="off"
+                <el-input size="medium" type="text" v-model="loginForm.username" auto-complete="off"
                           placeholder="请输入用户名"></el-input>
             </el-form-item>
             <el-form-item prop="password">
-                <el-input size="normal" type="password" v-model="loginForm.password" auto-complete="off"
+                <el-input size="medium" type="password" v-model="loginForm.password" auto-complete="off"
                           placeholder="请输入密码"></el-input>
             </el-form-item>
             <el-form-item prop="code">
-                <el-input size="normal" type="text" v-model="loginForm.code" auto-complete="off"
+                <el-input size="medium" type="text" v-model="loginForm.code" auto-complete="off"
                           placeholder="点击图片更换验证码" @keydown.enter.native="submitLogin" style="width: 250px"></el-input>
                 <img :src="vcUrl" @click="updateVerifyCode" alt="" style="cursor: pointer">
             </el-form-item>
-            <el-checkbox size="normal" class="loginRemember" v-model="checked"></el-checkbox>
-            <el-button size="normal" type="primary" style="width: 100%;" @click="submitLogin">登录</el-button>
+            <el-checkbox size="medium" class="loginRemember" v-model="checked"></el-checkbox>
+            <el-button size="medium" type="primary" style="width: 100%;" @click="submitLogin">登录</el-button>
         </el-form>
     </div>
 </template>
@@ -61,8 +61,9 @@
                         this.postRequest('/doLogin', this.loginForm).then(resp => {
                             this.loading = false;
                             if (resp) {
-                                this.$store.commit('INIT_CURRENTHR', resp.obj);
-                                window.sessionStorage.setItem("user", JSON.stringify(resp.obj));
+                                console.log(resp);
+                                this.$store.commit('INIT_CURRENTHR', resp.data);
+                                window.sessionStorage.setItem("user", JSON.stringify(resp.data));
                                 let path = this.$route.query.redirect;
                                 this.$router.replace((path == '/' || path == undefined) ? '/home' : path);
                             }else{

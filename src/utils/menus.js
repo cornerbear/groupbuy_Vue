@@ -1,50 +1,30 @@
-import {getRequest} from "./request";
+import { getRequest } from "./request";
 
 export const initMenu = (router, store) => {
-    console.log(store)
     if (store.state.routes.length > 0) {
         return;
     }
-    getRequest("/system/config/menu").then(data => {
+    getRequest("/system/menu").then(data => {
         if (data) {
-            let fmtRoutes = formatRoutes(data);
-            router.addRoutes(fmtRoutes);
-            store.commit('initRoutes', fmtRoutes);
-            store.dispatch('connect');
+            store.commit('initRoutes', data);
+            routerPackag(data, router);
+            // store.dispatch('connect');
         }
     })
 }
-export const formatRoutes = (routes) => {
-    let fmRoutes = [];
-    routes.forEach(router => {
-        let {
-            path,
-            component,
-            name,
-            meta,
-            iconCls,
-            children
-        } = router;
-        if (children && children instanceof Array) {
-            children = formatRoutes(children);
+export const routerPackag = (routes, router) => {
+    routes.filter(itemRouter => {
+        if (itemRouter.component != "Layout") {
+            router.addRoute("Index", {
+                path: `${itemRouter.path}`,
+                name: itemRouter.name,
+                component: () => import(`../views/${itemRouter.component}.vue`)
+            });
         }
-        let fmRouter = {
-            path: path,
-            name: name,
-            iconCls: iconCls,
-            meta: meta,
-            children: children,
-            component(resolve) {
-                if (component.startsWith("Home")) {
-                    require(['../views/' + component + '.vue'], resolve);
-                } else if (component.startsWith("Admin")) {
-                    require(['../views/admin/' + component + '.vue'], resolve);
-                } else if (component.startsWith("User")) {
-                    require(['../views/user/' + component + '.vue'], resolve);
-                } 
-            }
+        // 是否存在子集
+        if (itemRouter.children && itemRouter.children.length) {
+            routerPackag(itemRouter.children,router);
         }
-        fmRoutes.push(fmRouter);
-    })
-    return fmRoutes;
+        return true;
+    });
 }

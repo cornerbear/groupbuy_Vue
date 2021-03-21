@@ -78,9 +78,9 @@
             getTableData(pageNo, pageSize) {
                 axios.get("/admin/goods/all/" + pageNo + "/" + pageSize).then((resp) => {
                     console.log(resp);
-                    this.tableData = resp.data.records;
-                    this.total = resp.data.total;
-                    this.pageCount = resp.data.pages;
+                    this.tableData = resp.records;
+                    this.total = resp.total;
+                    this.pageCount = resp.pages;
                 })
                     .catch((error) => {
                         console.log(error);

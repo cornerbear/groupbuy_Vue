@@ -73,12 +73,11 @@
         },
         created() {
             this.getlist();
-
         },
         methods: {
             getlist() {
                 axios.post("/admin/categoryTree").then((res) => {
-                    this.treeData = res.data.data;
+                    this.treeData = res.data;
                     this.selectData = this.treeData;
                 })
             },

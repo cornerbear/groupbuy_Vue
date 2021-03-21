@@ -65,7 +65,7 @@
                                 this.$store.commit('INIT_CURRENTHR', resp.data);
                                 window.sessionStorage.setItem("user", JSON.stringify(resp.data));
                                 let path = this.$route.query.redirect;
-                                this.$router.replace((path == '/' || path == undefined) ? '/home' : path);
+                                this.$router.replace((path == '/' || path == undefined) ? '/index' : path);
                             }else{
                                 this.vcUrl = '/verifyCode?time='+new Date();
                             }

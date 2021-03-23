@@ -40,7 +40,7 @@
                 loginForm: {
                     username: 'admin',
                     password: '123456',
-                    code:''
+                    code:'1'
                 },
                 checked: true,
                 rules: {
@@ -61,7 +61,6 @@
                         this.postRequest('/doLogin', this.loginForm).then(resp => {
                             this.loading = false;
                             if (resp) {
-                                console.log(resp);
                                 this.$store.commit('INIT_CURRENTHR', resp.data);
                                 window.sessionStorage.setItem("user", JSON.stringify(resp.data));
                                 let path = this.$route.query.redirect;

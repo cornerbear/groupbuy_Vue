@@ -53,9 +53,6 @@
     },
     computed: {
       routes() {
-        console.log(1);
-        console.log(this.$store.state.routes);
-        console.log(1);
         return this.$store.state.routes;
       },
     }

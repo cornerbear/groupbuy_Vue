@@ -91,9 +91,7 @@
             submitForm(formName) {
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
-                        console.log(this.formModel);
                         axios.post("/admin/goods", this.formModel).then((resp) => {
-                            console.log(resp.data);
                             if (resp.data.success) {
                                 this.dialogFormVisible = false;
                                 this.$message(resp.data.msg);

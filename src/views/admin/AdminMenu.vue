@@ -57,23 +57,23 @@
     <!-- 添加菜单模态框 -->
     <el-dialog title="添加菜单" v-model="dialogFormVisible">
         <el-form :model="formModel" ref="form" :rules="rules">
-            <el-form-item label="菜单名称" prop="name" >
+            <el-form-item label="菜单名称" prop="name">
                 <el-input v-model="formModel.name" autocomplete="off"></el-input>
             </el-form-item>
-            <el-form-item label="父菜单" prop="parentId" >
+            <el-form-item label="父菜单" prop="parentId">
                 <el-cascader v-model="formModel.parentId" :options="selectData" :props="selectProps" clearable
                     placeholder="若为根节点，则不选择"></el-cascader>
             </el-form-item>
-            <el-form-item label="URL" prop="url" >
+            <el-form-item label="URL" prop="url">
                 <el-input v-model="formModel.url" autocomplete="off"></el-input>
             </el-form-item>
-            <el-form-item label="PATH" prop="path" >
+            <el-form-item label="PATH" prop="path">
                 <el-input v-model="formModel.path" autocomplete="off"></el-input>
             </el-form-item>
-            <el-form-item label="序号" prop="sort" >
+            <el-form-item label="序号" prop="sort">
                 <el-input v-model="formModel.sort" autocomplete="off"></el-input>
             </el-form-item>
-            <el-form-item label="是否启用" prop="enabled" >
+            <el-form-item label="是否启用" prop="enabled">
                 <el-radio v-model="formModel.enabled" label="true">是</el-radio>
                 <el-radio v-model="formModel.enabled" label="false">否</el-radio>
             </el-form-item>
@@ -138,7 +138,7 @@
         methods: {
             // 初始化树
             initMenuTree() {
-                this.getRequest("/system/menuTree").then((resp) => {
+                this.getRequest("/system/menu/tree").then((resp) => {
                     console.log(resp);
                     this.treeData = resp.data;
                     this.selectData = resp.data;
@@ -148,8 +148,10 @@
             initMenuTable() {
                 this.getTableData(this.pageNo, this.pageSize);
             },
+
+            // 获取表格数据并设置
             getTableData(pageNo, pageSize) {
-                this.getRequest("/system/menuTable", {
+                this.getRequest("/system/menu/table", {
                     pageNo: pageNo,
                     pageSize: pageSize
                 }).then((resp) => {
@@ -175,10 +177,16 @@
             },
 
             remove(node, data) {
-                console.log("node")
-                console.log(node)
-                console.log("data")
-                console.log(data)
+
+                var id = data.id;
+                this.deleteRequest("/system/menu", {id : id}).then((res) => {
+                    console.log(res)
+                    if (res.success) {
+                        ElMessage.success(res.msg);
+                    } else {
+                        ElMessage.error(res.msg);
+                    }
+                })
             },
             edit(node, data) {
                 console.log("node")

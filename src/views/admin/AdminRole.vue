@@ -26,8 +26,10 @@
                         @click="deleteRole(r)"></el-button>
                 </div>
                 <div>
-                    <el-tree show-checkbox node-key="id" ref="tree" :key="index" :default-checked-keys="selectedMenus"
-                        :data="allmenus" :props="defaultProps"></el-tree>
+                    <el-tree show-checkbox node-key="id" ref="menuTree" :key="index" 
+                    :default-expanded-keys="[2]"
+                    :default-checked-keys="selectedMenus"
+                    :data="allMenus" :props="defaultProps"></el-tree>
                     <div style="display: flex;justify-content: flex-end">
                         <el-button @click="cancelUpdate">取消修改</el-button>
                         <el-button type="primary" @click="doUpdate(r.id,index)">确认修改</el-button>
@@ -47,7 +49,7 @@
                     name: '',
                     nameZh: ''
                 },
-                allmenus: [],
+                allMenus: [],
                 activeName: -1,
                 selectedMenus: [],
                 roles: [],
@@ -56,7 +58,9 @@
                 defaultProps: {
                     children: 'children',
                     label: 'name'
-                }
+                },
+                index : null,
+
             }
         },
         methods: {
@@ -116,26 +120,29 @@
                 }
             },
             initSelectedMenus(rid) {
-                this.getRequest("/system/menuIds/" + rid).then(resp => {
+                this.getRequest("/system/menu/ids/" + rid).then(resp => {
                     if (resp) {
                         this.selectedMenus = resp;
+                        this.$refs.menuTree.loading = false;
+                        this.$nextTick(() => {
+                            this.$refs.menuTree.setCheckedKeys(this.selectedMenus);
+                            this.$refs.menuTree.loading = true;
+                        })
                     }
                 })
             },
             initAllMenus() {
                 this.getRequest("/system/menus").then(resp => {
                     if (resp) {
-                        this.allmenus = resp;
+                        this.allMenus = resp;
                     }
                 })
             },
             initRoles() {
                 this.loading = true;
-                console.log(1);
                 this.getRequest('/system/role/all').then(resp => {
                     this.loading = false;
                     if (resp) {
-                        console.log(resp);
                         this.roles = resp.data;
                     }
                 })

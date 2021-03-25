@@ -4,7 +4,7 @@ export const initMenu = (router, store) => {
     if (store.state.routes.length > 0) {
         return;
     }
-    getRequest("/system/menu").then(data => {
+    getRequest("/system/menu/initLeftMenu").then(data => {
         if (data) {
             store.commit('initRoutes', data);
             routerPackag(data, router);

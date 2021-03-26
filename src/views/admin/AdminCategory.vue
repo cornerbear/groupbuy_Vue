@@ -1,6 +1,7 @@
 <template>
     <!--tree-->
     <!-- <el-card> -->
+        <!-- :expand-on-click-node="false" -->
     <el-tree :props="treeProps" :data="treeData" show-checkbox node-key="id" :default-expand-all="false"
         :expand-on-click-node="false">
         <template #default="{ node, data }">

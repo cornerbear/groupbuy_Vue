@@ -12,7 +12,7 @@
     <div class="menuTree">
         <el-card>
             <el-tree :props="treeProps" :data="treeData" show-checkbox node-key="id" :default-expand-all="false"
-                :expand-on-click-node="false">
+                :expand-on-click-node="false" @node-click="handleNodeClick">
                 <template #default="{ node, data }">
                     <span class="custom-tree-node">
                         <span>{{node.label}}</span>
@@ -96,7 +96,7 @@
             </el-form-item>
             <el-form-item label="父菜单" prop="parentId">
                 <el-cascader v-model="updateFormModel.parentId" :options="selectData" :props="selectProps" clearable
-                    placeholder="若为根节点，则不选择" @change="selectChange"></el-cascader>
+                    placeholder="若为根节点，则不选择"></el-cascader>
             </el-form-item>
             <el-form-item label="URL" prop="url">
                 <el-input v-model="updateFormModel.url" autocomplete="off"></el-input>
@@ -170,7 +170,7 @@
                         { min: 3, max: 5, message: '长度在3-5个字符之间', trigger: 'blur' }
                     ]
                 },
-                parentId : null,
+                parentId: null,
             }
         },
         created() {
@@ -187,24 +187,25 @@
             },
             // 初始化表格
             initMenuTable() {
-                this.getTableData(this.pageNo, this.pageSize);
+                this.setTableData(null, this.pageNo, this.pageSize);
             },
 
             // 获取表格数据并设置
-            getTableData(pageNo, pageSize) {
+            setTableData(parentId, pageNo, pageSize) {
                 this.getRequest("/system/menu/table", {
                     pageNo: pageNo,
-                    pageSize: pageSize
+                    pageSize: pageSize,
+                    parentId: parentId
                 }).then((resp) => {
                     this.tableData = resp.data.records;
                     this.total = resp.data.total;
                     this.pageCount = resp.data.pages;
                 })
             },
-            
+
             // 单击树形触发
             handleNodeClick(data) {
-                console.log(data);
+                this.setTableData(data.id, this.pageNo, this.pageSize);
             },
             // 打开添加菜单窗口
             openAddMenuDialog(node, data) {
@@ -214,7 +215,7 @@
             addMenu(form) {
                 this.addFormModel.parentId = this.addFormModel.parentId[this.addFormModel.parentId.length - 1];
                 this.postRequest("/system/menu", this.addFormModel).then((res) => {
-                    if(res.success){
+                    if (res.success) {
                         ElMessage.success(res.msg);
                         this.addDialogVisible = false;
                     } else {
@@ -225,7 +226,7 @@
             // 删除菜单
             delete(node, data) {
                 var id = data.id;
-                this.deleteRequest("/system/menu", {id : id}).then((res) => {
+                this.deleteRequest("/system/menu", { id: id }).then((res) => {
                     if (res.success) {
                         ElMessage.success(res.msg);
                     } else {
@@ -234,7 +235,7 @@
                 })
             },
             // 更新菜单
-            openUpdateMenuDiglog(node, data){
+            openUpdateMenuDiglog(node, data) {
                 var id = data.id;
                 this.getRequest("/system/menu/" + id).then((res) => {
                     if (res.success) {
@@ -255,27 +256,13 @@
                     }
                 })
             },
-            setSelectData(){
-                this.getRequest("/system/menu/easyTree").then((res) => {
-                    if (res.success) {
-                        ElMessage.success(res.msg);
-                        this.updateDialogVisible = false;
-                    } else {
-                        ElMessage.error(res.msg);
-                    }
-                })
-            },
-            selectChange(value){
-                this.parentId = value;
-                console.log(value);
-            },
             handleSizeChange(pageSize) {
                 this.pageSize = pageSize;
-                this.getTableData(this.pageNo, this.pageSize)
+                this.setTableData(null, this.pageNo, this.pageSize)
             },
             handleCurrentChange(pageNo) {
                 this.pageNo = pageNo;
-                this.getTableData(this.pageNo, this.pageSize)
+                this.setTableData(null, this.pageNo, this.pageSize)
             },
         }
     }

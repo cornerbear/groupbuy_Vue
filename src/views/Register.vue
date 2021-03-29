@@ -54,11 +54,9 @@
                         this.postRequest('/register', this.registerModel).then(resp => {
                             this.loading = false;
                             if (resp.success) {
-                                this.message.success(resp.msg);
                                 this.$router.push('/');
                             } else {
                                 this.vcUrl = '/verifyCode?time=' + new Date();
-                                this.message.error(resp.msg);
                             }
                         })
                     } else {

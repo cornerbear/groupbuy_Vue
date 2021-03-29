@@ -126,8 +126,6 @@
 
 <script>
 
-    import { ElMessage } from 'element-plus'
-
     export default {
         name: "AdminMenu",
         data() {
@@ -216,22 +214,14 @@
                 this.addFormModel.parentId = this.addFormModel.parentId[this.addFormModel.parentId.length - 1];
                 this.postRequest("/system/menu", this.addFormModel).then((res) => {
                     if (res.success) {
-                        ElMessage.success(res.msg);
                         this.addDialogVisible = false;
-                    } else {
-                        ElMessage.error(res.msg);
-                    }
+                    } 
                 })
             },
             // 删除菜单
             delete(node, data) {
                 var id = data.id;
                 this.deleteRequest("/system/menu", { id: id }).then((res) => {
-                    if (res.success) {
-                        ElMessage.success(res.msg);
-                    } else {
-                        ElMessage.error(res.msg);
-                    }
                 })
             },
             // 更新菜单
@@ -241,19 +231,14 @@
                     if (res.success) {
                         this.updateFormModel = res.data;
                         this.updateDialogVisible = true;
-                    } else {
-                        ElMessage.error(res.msg);
-                    }
+                    } 
                 })
             },
             updateMenu(form) {
                 this.putRequest("/system/menu", this.updateFormModel).then((res) => {
                     if (res.success) {
-                        ElMessage.success(res.msg);
                         this.updateDialogVisible = false;
-                    } else {
-                        ElMessage.error(res.msg);
-                    }
+                    } 
                 })
             },
             handleSizeChange(pageSize) {

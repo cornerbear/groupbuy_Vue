@@ -58,8 +58,6 @@
 
 <script>
 
-    import { ElMessage } from 'element-plus'
-
     export default {
         name: "UserDetail",
         data() {
@@ -99,9 +97,9 @@
                     console.log(resp);
                     this.detailModel = resp.data;
                     if (resp.success) {
-                        ElMessage.success(res.msg);
+                        this.message.success(res.msg);
                     } else {
-                        ElMessage.error(res.msg);
+                        this.message.error(res.msg);
                     }
 
                 })
@@ -111,9 +109,9 @@
                     console.log(resp);
                     if (resp.success) {
                         this.updatePasswordDialog = false;
-                        ElMessage.success(res.msg);
+                        this.message.success(res.msg);
                     } else {
-                        ElMessage.error(res.msg);
+                        this.message.error(res.msg);
                     }
 
                 })

@@ -23,7 +23,7 @@ app.config.globalProperties.getRequest = getRequest;
 
 
 
-import {initMenu} from "./utils/menus";
+import { initMenu } from "./utils/menus";
 
 router.beforeEach((to, from, next) => {
     if (to.path == '/') {
@@ -33,7 +33,14 @@ router.beforeEach((to, from, next) => {
             initMenu(router, store);
             next();
         } else {
-            next('/?redirect=' + to.path);
+            // '/?redirect=' + to.path
+            next();
         }
     }
 })
+
+import {
+    message
+} from './utils/resetMessage';
+
+app.config.globalProperties.message = message;

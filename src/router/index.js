@@ -6,6 +6,12 @@ const routes = [
     name: 'Login',
     component: () => import('../views/Login.vue'),
     hidden: true
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: () => import('../views/Register.vue'),
+    hidden: true
   }, {
     path: '/index',
     name: 'Index',

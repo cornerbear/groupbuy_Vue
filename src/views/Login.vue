@@ -36,7 +36,7 @@
                     username: 'admin',
                     password: '123456',
                     code: '1',
-                    rememberMe: null,
+                    rememberMe: false,
                 },
                 checked: true,
                 rules: {

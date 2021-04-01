@@ -11,13 +11,17 @@ app.use(store).use(router).mount('#app')
 
 // axios.defaults.baseURL = 'http://localhost:8888';
 
+import { postKeyValueRequest } from "./utils/request";
 import { postRequest } from "./utils/request";
+import { putKeyValueRequest } from "./utils/request";
 import { putRequest } from "./utils/request";
 import { deleteRequest } from "./utils/request";
 import { getRequest } from "./utils/request";
 
 app.config.globalProperties.postRequest = postRequest;
+app.config.globalProperties.postKeyValueRequest = postKeyValueRequest;
 app.config.globalProperties.putRequest = putRequest;
+app.config.globalProperties.putKeyValueRequest = putKeyValueRequest;
 app.config.globalProperties.deleteRequest = deleteRequest;
 app.config.globalProperties.getRequest = getRequest;
 

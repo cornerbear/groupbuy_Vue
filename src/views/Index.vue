@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <el-container style="height: 500px; border: 1px solid #eee">
+    <el-container style="border: 1px solid #eee">
       <el-header style="text-align: right; font-size: 12px">
         <el-dropdown>
           <i class="el-icon-setting" style="margin-right: 15px"></i>
@@ -32,7 +32,7 @@
             <router-view></router-view>
 
           </el-main>
-          <el-footer>Footer</el-footer>
+          <el-footer id="footer">Footer</el-footer>
         </el-container>
       </el-container>
     </el-container>
@@ -60,6 +60,18 @@
 </script>
 
 <style>
+  body {
+    height : 100vh;
+    margin: 0;
+    padding: 8px;
+    box-sizing: border-box;
+  }
+  .el-container {
+    height: 100%;
+  }
+  #app {
+    height: 100%;
+  }
   .el-header {
     background-color: #B3C0D1;
     color: #333;
@@ -68,5 +80,9 @@
 
   .el-aside {
     color: #333;
+    height: 100%;
+  }
+  #footer {
+    background-color: #00b7ff;
   }
 </style>

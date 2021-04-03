@@ -1,231 +1,130 @@
+<!--
+    @Author  :   zhangxiaojian
+    @Time    :   2021/04/02 10:15:00
+ -->
 <template>
-    <div v-loading="globalLoading" element-loading-text="正在添加..." element-loading-spinner="el-icon-loading"
-        element-loading-background="rgba(0, 0, 0, 0.8)">
-        <div class="roleTool">
-            <el-input size="small" placeholder="请输入角色英文名" v-model="role.name">
-                <template #prepend>ROLE_</template>
-            </el-input>
-            <el-input size="small" placeholder="请输入角色中文名" v-model="role.nameZh" @keydown.enter.native="addRole">
-            </el-input>
-            <el-button type="primary" size="small" icon="el-icon-plus" @click="addRole">添加角色</el-button>
-        </div>
-        <div class="roleMain">
-            <el-collapse v-model="activeName" v-loading="loading" element-loading-text="正在加载..."
-                element-loading-spinner="el-icon-loading" element-loading-background="rgba(0, 0, 0, 0.8)" accordion
-                @change="change">
-                <el-collapse-item :title="r.nameZh" :name="r.roleId" v-for="(r,index) in roles" :key="index">
-                    <el-button type="primary" size="small" icon="el-icon-plus" @click="openUpdateRoleDialog(r.roleId)">
-                        修改角色</el-button>
-                    <el-button type="primary" size="small" icon="el-icon-delete" @click="deleteRole">删除角色</el-button>
-                </el-collapse-item>
-            </el-collapse>
-        </div>
-        <div class="roleMenu">
-            <el-card class="box-card">
-                <div slot="header" class="clearfix">
-                    <span>可访问的资源</span>
-                    <el-button style="float: right; padding: 3px 0;color: #ff0000;" icon="el-icon-delete" type="text"
-                        @click="deleteRole(r)"></el-button>
-                </div>
-                <div>
-                    <el-tree show-checkbox node-key="id" ref="menuTree" :key="index" :default-expanded-keys="[2]"
-                        :default-checked-keys="selectedMenus" :data="menuTreeData" :props="defaultProps"></el-tree>
-                    <div style="display: flex;justify-content: flex-end">
-                        <el-button @click="cancelUpdate">取消修改</el-button>
-                        <el-button type="primary" @click="updateRoleMenu(index)">确认修改</el-button>
-                    </div>
-                </div>
-            </el-card>
-        </div>
-    </div>
-    <el-dialog title="修改角色" v-model="updateRoleDialog" width="30%" @close="closeUpdateRoleDialog()">
-        <el-input size="small" placeholder="请输入角色英文名" v-model="role.name" class="updateInput">
-            <template #prepend>英文名称</template>
-        </el-input>
-        <el-input size="small" placeholder="请输入角色中文名" v-model="role.nameZh" class="updateInput"
-            @keydown.enter.native="updateRole">
-            <template #prepend>中文名称</template>
-        </el-input>
-        <template #footer>
-            <span class="dialog-footer">
-                <el-button @click="closeUpdateRoleDialog()">取 消</el-button>
-                <el-button type="primary" @click="updateRole()">确 定</el-button>
-            </span>
-        </template>
-    </el-dialog>
+    <div>
+        <el-table :data="tableData" border style="width: 100%" :fit="true">
+            <!-- <el-table-column fixed prop="date" label="日期" width="150">
+            </el-table-column> -->
+            <el-table-column prop="userId" label="用户ID">
+            </el-table-column>
+            <el-table-column prop="username" label="用户名">
+            </el-table-column>
+            <el-table-column prop="name" label="姓名">
+            </el-table-column>
+            <el-table-column prop="roles" label="已有身份">
+            </el-table-column>
+            <el-table-column label="操作">
+                <template #default="scope">
+                    <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
+                    <el-button type="text" size="small">编辑</el-button>
+                    <el-button @click="openSetRole(scope.row)" type="text" size="small">设置身份</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
 
+        <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage"
+            :page-sizes="[5, 10, 20]" :page-size="5" layout="total, sizes, prev, pager, next, jumper" :total="total"
+            :page-count="pageCount">
+        </el-pagination>
+
+        <!-- 设置身份模态框 -->
+        <el-dialog title="设置身份" v-model="setRoleVisible">
+            <el-transfer v-model="transferOwn" :data="transferData" :titles="['未拥有', '已拥有']" :props="transferProps" />
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="setRoleVisible = false">取 消</el-button>
+                    <el-button type="primary" @click="setUserRole()">保 存</el-button>
+                </span>
+            </template>
+        </el-dialog>
+    </div>
 </template>
 
 <script>
+
     export default {
-        name: "AdminRole",
         data() {
             return {
-                role: {
-                    roleId: '',
-                    name: '',
-                    nameZh: ''
+                total: null,
+                tableData: null,
+                pageCount: null,
+                currentPage: null,
+                pageNo: 1,
+                pageSize: 5,
+
+                setRoleVisible: false,
+                transferData: [],
+                transferOwn: [],
+                transferProps: {
+                    key: 'roleId',
+                    label: 'nameZh'
                 },
-                menuTreeData: [],
-                activeName: -1,
-                selectedMenus: [],
-                roles: [],
-                loading: false,
-                globalLoading: false,
-                defaultProps: {
-                    children: 'children',
-                    label: 'name'
-                },
-                index: null,
-                roleId: null,
-                updateRoleDialog: false,
+                transferUserId: null,
 
             }
         },
         methods: {
-            addRole() {
-                if (this.role.name && this.role.nameZh) {
-                    this.globalLoading = true;
-                    this.postRequest("/system/role", this.role).then(resp => {
-                        this.globalLoading = false;
-                        if (resp) {
-                            this.role.roleId = '';
-                            this.role.name = '';
-                            this.role.nameZh = '';
-                            this.initRoles();
-                        }
-                    })
-                } else {
-                    this.$message.error('数据不可以为空');
-                }
+            handleClick(row) {
+                console.log(row);
             },
-            deleteRole(role) {
-                this.$confirm('此操作将永久删除【' + role.nameZh + '】角色, 是否继续?', '提示', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                }).then(() => {
-                    this.deleteRequest("/system/basic/permiss/role/" + role.id).then(resp => {
-                        if (resp) {
-                            this.initRoles();
+            handleSizeChange(pageSize) {
+                this.pageSize = pageSize;
+                this.getTableData(this.pageNo, this.pageSize)
+            },
+            handleCurrentChange(pageNo) {
+                this.pageNo = pageNo;
+                this.getTableData(this.pageNo, this.pageSize)
+            },
+            getTableData(pageNo, pageSize) {
+                this.getRequest("/admin/userRole/all/" + pageNo + "/" + pageSize).then((resp) => {
+                    for (let i = 0; i < resp.records.length; i++) {
+                        var roleString = "";
+                        for (let j = 0; j < resp.records[i].roles.length; j++) {
+                            roleString = roleString + resp.records[i].roles[j].nameZh + ',';
                         }
-                    })
-                }).catch(() => {
-                    this.$message({
-                        type: 'info',
-                        message: '已取消删除'
-                    });
+                        if (roleString.length != 0) {
+                            roleString = roleString.substring(0, roleString.length - 1);
+                        }
+                        resp.records[i].roles = roleString;
+                    }
+                    this.tableData = resp.records;
+                    this.total = resp.total;
+                    this.pageCount = resp.pages;
+                }).catch((error) => {
+                    console.log(error);
                 });
             },
-            openUpdateRoleDialog(roleId) {
-                this.getRequest("/system/role/" + roleId).then(resp => {
-                    if (resp.success) {
-                        this.role = resp.data;
-                        this.updateRoleDialog = true;
-                    }
-                })
-            },
-            updateRole(roleId) {
-                this.putRequest("/system/role", this.role).then(resp => {
-                    if (resp.success) {
-                        this.updateRoleDialog = false;
-                        this.role.roleId = '';
-                        this.role.name = '';
-                        this.role.nameZh = '';
-                        this.initRoles();
-                    }
-                })
-            },
-            cancelUpdate() {
-                this.activeName = -1;
-            },
-            updateRoleMenu() {
-                let tree = this.$refs.menuTree;
-                // 不只包括叶子节点，包括半选节点
-                let selectedKeys = tree.getCheckedKeys(false, true);
 
-                this.putKeyValueRequest("/system/role/roleMenu", {
-                    roleId: this.roleId,
-                    menuIds: selectedKeys,
-                }).then(resp => {
-                    if (resp) {
-                        this.activeName = -1;
+            openSetRole(row) {
+                // 请求出所有的角色
+                this.getRequest("/system/role/all").then((resp) => {
+                    this.transferData = resp.data;
+                });
+                // 请求出该用户拥有的角色
+                this.transferUserId = row.userId;
+                this.getRequest("/admin/userRole/" + row.userId).then((resp) => {
+                    this.transferOwn = resp.data;
+                });
+                this.setRoleVisible = true;
+            },
+            setUserRole() {
+                console.log(this.transferOwn);
+                this.putKeyValueRequest("/admin/userRole", {
+                    userId: this.transferUserId,
+                    roleIds: this.transferOwn,
+                }).then((resp) => {
+                    if(resp.success){
+                        this.setRoleVisible = false;
                     }
-                })
+                });
             },
-            change(rid) {
-                if (rid) {
-                    this.roleId = rid;
-                    this.setSelectedMenus(rid);
-                }
-            },
-            setSelectedMenus(rid) {
-                this.getRequest("/system/menu/ids/" + rid).then(resp => {
-                    if (resp) {
-                        this.selectedMenus = resp;
-                        this.$refs.menuTree.loading = false;
-                        this.$nextTick(() => {
-                            this.$refs.menuTree.setCheckedKeys(this.selectedMenus);
-                            this.$refs.menuTree.loading = true;
-                        })
-                    }
-                })
-            },
-            // 初始化右侧菜单树
-            initMenuTree() {
-                this.getRequest("/system/menu/IdAndName").then(resp => {
-                    if (resp) {
-                        this.menuTreeData = resp;
-                    }
-                })
-            },
-            initRoles() {
-                this.loading = true;
-                this.getRequest('/system/role/all').then(resp => {
-                    this.loading = false;
-                    if (resp) {
-                        this.roles = resp.data;
-                    }
-                })
-            },
-            closeUpdateRoleDialog() {
-                this.updateRoleDialog = false;
-                this.role.name = '';
-                this.role.nameZh = '';
-                this.role.roleId = '';
-            }
+
         },
         created() {
-            this.initRoles();
-            this.initMenuTree();
+            this.getTableData(this.pageNo, this.pageSize);
         },
+
     }
 </script>
-
-<style>
-    .roleTool {
-        display: flex;
-        justify-content: flex-start;
-    }
-
-    .roleTool .el-input {
-        width: 300px;
-        margin-right: 6px;
-    }
-
-    .roleMain {
-        margin-top: 10px;
-        width: 350px;
-        float: left;
-    }
-
-    .roleMenu {
-        margin-top: 10px;
-        margin-left: 30px;
-        float: left;
-    }
-
-    .updateInput {
-        width: 400px;
-    }
-</style>

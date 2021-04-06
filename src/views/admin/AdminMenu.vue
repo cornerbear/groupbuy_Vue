@@ -1,5 +1,4 @@
 <template>
-
     <div class="header">
         <el-card>
             <el-button type="primary" plain @click="addDialogVisible=true">
@@ -17,11 +16,14 @@
                     <span class="custom-tree-node">
                         <span>{{node.label}}</span>
                         <span>
-                            <el-button type="text" size="mini" @click="() => delete(node, data)">
-                                删除
+                            <el-button type="text" size="mini" @click="() => treeDetail(node, data)">
+                                查看
                             </el-button>
-                            <el-button type="text" size="mini" @click="() => openUpdateMenuDiglog(node, data)">
+                            <el-button type="text" size="mini" @click="() => openTreeUpdate(node, data)">
                                 编辑
+                            </el-button>
+                            <el-button type="text" size="mini" @click="() => treeDelete(node, data)">
+                                删除
                             </el-button>
                         </span>
                     </span>
@@ -33,16 +35,17 @@
     <!-- 表格控件  -->
     <div class="menuTable">
         <el-card>
-            <el-table :data="tableData" border>
-                <el-table-column prop="id" label="ID" width="50px" />
-                <el-table-column prop="name" label="名称" width="120" />
-                <el-table-column prop="component" label="component" width="230px" />
-                <el-table-column prop="path" label="Path" width="230px" />
-                <el-table-column prop="parentId" label="父ID" width="70px" />
-                <el-table-column fixed="right" label="操作">
+            <el-table :data="tableData" border :fit="true">
+                <el-table-column prop="id" label="ID" />
+                <el-table-column prop="name" label="名称" />
+                <el-table-column prop="component" label="component" />
+                <el-table-column prop="path" label="Path" />
+                <el-table-column prop="parentId" label="父ID" />
+                <el-table-column label="操作">
                     <template #default="scope">
-                        <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
-                        <el-button type="text" size="small">编辑</el-button>
+                        <el-button @click="tableDetail(scope.row)" type="text" size="small">查看</el-button>
+                        <el-button @click="openTableUpdate(scope.row)" type="text" size="small">编辑</el-button>
+                        <el-button @click="tableDelete(scope.row)" type="text" size="small">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -77,8 +80,8 @@
                 <el-input v-model="addFormModel.sort" autocomplete="off"></el-input>
             </el-form-item>
             <el-form-item label="是否启用" prop="enabled">
-                <el-radio v-model="addFormModel.enabled" label="true">是</el-radio>
-                <el-radio v-model="addFormModel.enabled" label="false">否</el-radio>
+                <el-radio v-model="addFormModel.enabled" :label="true">是</el-radio>
+                <el-radio v-model="addFormModel.enabled" :label="false">否</el-radio>
             </el-form-item>
         </el-form>
         <template #footer>
@@ -90,35 +93,69 @@
     </el-dialog>
     <!-- 修改菜单模态框 -->
     <el-dialog title="修改菜单" v-model="updateDialogVisible">
-        <el-form :model="updateFormModel" ref="updateForm" :rules="rules">
+        <el-form :model="dataModel" ref="updateForm" :rules="rules">
             <el-form-item label="菜单名称" prop="name">
-                <el-input v-model="updateFormModel.name" autocomplete="off"></el-input>
+                <el-input v-model="dataModel.name" autocomplete="off"></el-input>
             </el-form-item>
             <el-form-item label="父菜单" prop="parentId">
-                <el-cascader v-model="updateFormModel.parentId" :options="selectData" :props="selectProps" clearable
-                    placeholder="若为根节点，则不选择"></el-cascader>
+                <el-cascader v-model="dataModel.parentId" :options="selectData" :props="selectProps" clearable
+                    placeholder="若为根节点，则不选择" @change="selectChange()"></el-cascader>
             </el-form-item>
             <el-form-item label="URL" prop="url">
-                <el-input v-model="updateFormModel.url" autocomplete="off"></el-input>
+                <el-input v-model="dataModel.url" autocomplete="off"></el-input>
             </el-form-item>
             <el-form-item label="PATH" prop="path">
-                <el-input v-model="updateFormModel.path" autocomplete="off"></el-input>
+                <el-input v-model="dataModel.path" autocomplete="off"></el-input>
             </el-form-item>
             <el-form-item label="component" prop="component">
-                <el-input v-model="updateFormModel.component" autocomplete="off"></el-input>
+                <el-input v-model="dataModel.component" autocomplete="off"></el-input>
             </el-form-item>
             <el-form-item label="序号" prop="sort">
-                <el-input v-model="updateFormModel.sort" autocomplete="off"></el-input>
+                <el-input v-model="dataModel.sort" autocomplete="off"></el-input>
             </el-form-item>
             <el-form-item label="是否启用" prop="enabled">
-                <el-radio v-model="updateFormModel.enabled" label="true">是</el-radio>
-                <el-radio v-model="updateFormModel.enabled" label="false">否</el-radio>
+                <el-radio v-model="dataModel.enabled" :label=true>是</el-radio>
+                <el-radio v-model="dataModel.enabled" :label=false>否</el-radio>
             </el-form-item>
         </el-form>
         <template #footer>
             <span class="dialog-footer">
                 <el-button @click="updateDialogVisible = false">取 消</el-button>
-                <el-button type="primary" @click="updateMenu('updateForm')">确 定</el-button>
+                <el-button type="primary" @click="updateMenu('data')">确 定</el-button>
+            </span>
+        </template>
+    </el-dialog>
+
+    <!-- 查看菜单模态框 -->
+    <el-dialog title="查看菜单" v-model="detailDialogVisible">
+        <el-form :model="dataModel" ref="detailForm" :rules="rules" :disabled="detailFormDisabled">
+            <el-form-item label="菜单名称" prop="name">
+                <el-input v-model="dataModel.name" ></el-input>
+            </el-form-item>
+            <el-form-item label="父菜单" prop="parentId">
+                <el-cascader v-model="dataModel.parentId" :options="selectData" :props="selectProps" clearable
+                    placeholder="若为根节点，则不选择" @change="selectChange()"></el-cascader>
+            </el-form-item>
+            <el-form-item label="URL" prop="url">
+                <el-input v-model="dataModel.url" ></el-input>
+            </el-form-item>
+            <el-form-item label="PATH" prop="path">
+                <el-input v-model="dataModel.path" ></el-input>
+            </el-form-item>
+            <el-form-item label="component" prop="component">
+                <el-input v-model="dataModel.component" ></el-input>
+            </el-form-item>
+            <el-form-item label="序号" prop="sort">
+                <el-input v-model="dataModel.sort" ></el-input>
+            </el-form-item>
+            <el-form-item label="是否启用" prop="enabled">
+                <el-radio v-model="dataModel.enabled" :label="true">是</el-radio>
+                <el-radio v-model="dataModel.enabled" :label="false">否</el-radio>
+            </el-form-item>
+        </el-form>
+        <template #footer>
+            <span class="dialog-footer">
+                <el-button @click="detailDialogVisible = false">取 消</el-button>
             </span>
         </template>
     </el-dialog>
@@ -147,6 +184,7 @@
                 // 模态框属性
                 addDialogVisible: false,
                 updateDialogVisible: false,
+                detailDialogVisible: false,
                 selectProps: {
                     checkStrictly: true,
                     value: 'id',
@@ -161,7 +199,8 @@
                     sort: 1,
                     enabled: 1,
                 },
-                updateFormModel: null,
+                detailFormDisabled: true,
+                dataModel: null,
                 rules: {
                     goodsName: [
                         { required: true, message: '请填写商品名称', trigger: 'blur' },
@@ -215,32 +254,77 @@
                 this.postRequest("/system/menu", this.addFormModel).then((res) => {
                     if (res.success) {
                         this.addDialogVisible = false;
-                    } 
+                        this.initMenuTree();
+                        this.initMenuTable();
+                    }
                 })
             },
+
+
             // 删除菜单
-            delete(node, data) {
-                var id = data.id;
-                this.deleteRequest("/system/menu", { id: id }).then((res) => {
-                })
+            delete(id) {
+                this.$confirm('此操作将永久删除该菜单, 是否继续?', '警告', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    this.deleteRequest("/system/menu", { id: id }).then((res) => {
+                            this.initMenuTree();
+                            this.initMenuTable();
+                        })
+                }).catch(() => {
+                    this.message.info("已取消删除");
+                });
             },
+
+            treeDelete(node, data) {
+                this.delete(data.id);
+            },
+            tableDelete(row) {
+                this.delete(row.id);
+            },
+
             // 更新菜单
-            openUpdateMenuDiglog(node, data) {
-                var id = data.id;
+            openTreeUpdate(node, data) {
+                this.openUpdate(data.id);
+            },
+            openTableUpdate(row) {
+                this.openUpdate(row.id);
+            },
+            openUpdate(id) {
                 this.getRequest("/system/menu/" + id).then((res) => {
                     if (res.success) {
-                        this.updateFormModel = res.data;
+                        this.dataModel = res.data;
                         this.updateDialogVisible = true;
-                    } 
+                    }
                 })
             },
             updateMenu(form) {
-                this.putRequest("/system/menu", this.updateFormModel).then((res) => {
+                this.putRequest("/system/menu", this.dataModel).then((res) => {
                     if (res.success) {
                         this.updateDialogVisible = false;
-                    } 
+                        this.initMenuTree();
+                        this.initMenuTable();
+                    }
                 })
             },
+
+            treeDetail(node, data) {
+                this.openDetail(data.id);
+            },
+            tableDetail(row) {
+                this.openDetail(row.id);
+            },
+            openDetail(id) {
+                this.getRequest("/system/menu/" + id).then((resp) => {
+                    if (resp.success) {
+                        console.log(resp)
+                        this.dataModel = resp.data;
+                        this.detailDialogVisible = true;
+                    }
+                })
+            },
+
             handleSizeChange(pageSize) {
                 this.pageSize = pageSize;
                 this.setTableData(null, this.pageNo, this.pageSize)
@@ -248,6 +332,10 @@
             handleCurrentChange(pageNo) {
                 this.pageNo = pageNo;
                 this.setTableData(null, this.pageNo, this.pageSize)
+            },
+            selectChange() {
+                // select的数据是数组形式，需要转换
+                this.dataModel.parentId = this.dataModel.parentId[this.dataModel.parentId.length - 1];
             },
         }
     }

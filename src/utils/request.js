@@ -8,7 +8,11 @@ axios.interceptors.response.use(success => {
         return;
     }
     if (success.data.msg) {
-        ElMessage.success({message: success.data.msg})
+        if(success.data.success){
+            ElMessage.success({message: success.data.msg})
+        } else {
+            ElMessage.warning({message: success.data.msg})
+        }
     }
     return success.data;
 }, error => {

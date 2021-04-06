@@ -17,8 +17,8 @@
             </el-table-column>
             <el-table-column label="操作">
                 <template #default="scope">
-                    <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
-                    <el-button type="text" size="small">编辑</el-button>
+                    <el-button @click="openDetail(scope.row)" type="text" size="small">查看</el-button>
+                    <el-button @click="openUpdate(scope.row)" type="text" size="small">编辑</el-button>
                     <el-button @click="openSetRole(scope.row)" type="text" size="small">设置身份</el-button>
                 </template>
             </el-table-column>
@@ -36,6 +36,67 @@
                 <span class="dialog-footer">
                     <el-button @click="setRoleVisible = false">取 消</el-button>
                     <el-button type="primary" @click="setUserRole()">保 存</el-button>
+                </span>
+            </template>
+        </el-dialog>
+
+        <!-- 查看用户详情模态框 -->
+        <el-dialog title="查看用户" v-model="detailDialogVisible">
+            <el-form :model="dataModel" ref="detailForm" :rules="rules" :disabled="formDisabled">
+                <el-form-item label="用户ID" prop="userId">
+                    <el-input v-model="dataModel.userId"></el-input>
+                </el-form-item>
+                <el-form-item label="用户名" prop="username">
+                    <el-input v-model="dataModel.username"></el-input>
+                </el-form-item>
+                <el-form-item label="姓名" prop="name">
+                    <el-input v-model="dataModel.name"></el-input>
+                </el-form-item>
+                <el-form-item label="手机号" prop="userPhone">
+                    <el-input v-model="dataModel.userPhone"></el-input>
+                </el-form-item>
+                <el-form-item label="地址" prop="userAddress">
+                    <el-input v-model="dataModel.userAddress"></el-input>
+                </el-form-item>
+                <el-form-item label="用户性别" prop="userSex">
+                    <el-radio v-model="dataModel.userSex" :label="1">男</el-radio>
+                    <el-radio v-model="dataModel.userSex" :label="0">女</el-radio>
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="detailDialogVisible = false">取 消</el-button>
+                </span>
+            </template>
+        </el-dialog>
+
+        <!-- 编辑用户模态框 -->
+        <el-dialog title="修改用户信息" v-model="updateDialogVisible">
+            <el-form :model="dataModel" ref="updateForm" :rules="rules">
+                <el-form-item label="用户ID" prop="userId" v-show="false">
+                    <el-input v-model="dataModel.userId"></el-input>
+                </el-form-item>
+                <el-form-item label="用户名" prop="username">
+                    <el-input v-model="dataModel.username"></el-input>
+                </el-form-item>
+                <el-form-item label="姓名" prop="name">
+                    <el-input v-model="dataModel.name"></el-input>
+                </el-form-item>
+                <el-form-item label="手机号" prop="userPhone">
+                    <el-input v-model="dataModel.userPhone"></el-input>
+                </el-form-item>
+                <el-form-item label="地址" prop="userAddress">
+                    <el-input v-model="dataModel.userAddress"></el-input>
+                </el-form-item>
+                <el-form-item label="用户性别" prop="userSex">
+                    <el-radio v-model="dataModel.userSex" :label="1">男</el-radio>
+                    <el-radio v-model="dataModel.userSex" :label="0">女</el-radio>
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="updateDialogVisible = false">取 消</el-button>
+                    <el-button type="primary" @click="update()">修 改</el-button>
                 </span>
             </template>
         </el-dialog>
@@ -63,6 +124,10 @@
                 },
                 transferUserId: null,
 
+                detailDialogVisible: false,
+                formDisabled: true,
+                dataModel: null,
+                updateDialogVisible: false,
             }
         },
         methods: {
@@ -97,6 +162,32 @@
                 });
             },
 
+            openDetail(row) {
+                this.getRequest("/admin/user/" + row.userId).then(resp => {
+                    if (resp.success) {
+                        this.dataModel = resp.data;
+                        this.detailDialogVisible = true;
+                    }
+                })
+            },
+
+            openUpdate(row) {
+                this.getRequest("/admin/user/" + row.userId).then(resp => {
+                    if (resp.success) {
+                        this.dataModel = resp.data;
+                        this.updateDialogVisible = true;
+                    }
+                })
+            },
+            update() {
+                this.putRequest("/admin/user", this.dataModel).then(resp => {
+                    if (resp.success) {
+                        this.updateDialogVisible = false;
+                        this.init();
+                    }
+                })
+            },
+
             openSetRole(row) {
                 // 请求出所有的角色
                 this.getRequest("/system/role/all").then((resp) => {
@@ -115,16 +206,22 @@
                     userId: this.transferUserId,
                     roleIds: this.transferOwn,
                 }).then((resp) => {
-                    if(resp.success){
+                    if (resp.success) {
                         this.setRoleVisible = false;
+                        this.init();
                     }
                 });
             },
 
+
+            init() {
+                this.getTableData(this.pageNo, this.pageSize);
+            },
         },
         created() {
-            this.getTableData(this.pageNo, this.pageSize);
+            this.init();
         },
+
 
     }
 </script>

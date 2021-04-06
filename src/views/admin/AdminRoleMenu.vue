@@ -14,9 +14,9 @@
                 element-loading-spinner="el-icon-loading" element-loading-background="rgba(0, 0, 0, 0.8)" accordion
                 @change="change">
                 <el-collapse-item :title="r.nameZh" :name="r.roleId" v-for="(r,index) in roles" :key="index">
-                    <el-button type="primary" size="small" icon="el-icon-plus" @click="openUpdateRoleDialog(r.roleId)">
+                    <el-button type="primary" size="small" icon="el-icon-edit" @click="openUpdateRoleDialog(r.roleId)">
                         修改角色</el-button>
-                    <el-button type="primary" size="small" icon="el-icon-delete" @click="deleteRole">删除角色</el-button>
+                    <el-button type="danger" size="small" icon="el-icon-delete" @click="deleteRole">删除角色</el-button>
                 </el-collapse-item>
             </el-collapse>
         </div>
@@ -24,8 +24,6 @@
             <el-card class="box-card">
                 <div slot="header" class="clearfix">
                     <span>可访问的资源</span>
-                    <el-button style="float: right; padding: 3px 0;color: #ff0000;" icon="el-icon-delete" type="text"
-                        @click="deleteRole(r)"></el-button>
                 </div>
                 <div>
                     <el-tree show-checkbox node-key="id" ref="menuTree" :key="index" :default-expanded-keys="[2]"
@@ -138,6 +136,8 @@
             },
             cancelUpdate() {
                 this.activeName = -1;
+                this.selectedMenus = [];
+                this.$refs.menuTree.setCheckedKeys(this.selectedMenus);
             },
             updateRoleMenu() {
                 let tree = this.$refs.menuTree;

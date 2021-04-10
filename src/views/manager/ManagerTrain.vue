@@ -27,7 +27,7 @@
             <el-table-column fixed="right" label="操作">
                 <template #default="scope">
                     <el-button @click="openDetail(scope.row)" type="text" size="small">查看</el-button>
-                    <el-button type="text" size="small">编辑</el-button>
+                    <el-button @click="deleteTrain(scope.row)" type="text" size="small">删除</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -39,18 +39,18 @@
 
         <!-- 新增培训模态框 -->
         <el-dialog title="发布培训" v-model="addDialogVisible">
-            <el-form :model="dataModel" ref="addForm">
+            <el-form :model="addDataModel" ref="addForm">
                 <el-form-item label="培训名称" prop="trainName">
-                    <el-input v-model="dataModel.trainName"></el-input>
+                    <el-input v-model="addDataModel.trainName"></el-input>
                 </el-form-item>
                 <el-form-item label="培训内容" prop="trainContent">
-                    <el-input type="textarea" v-model="dataModel.trainContent"></el-input>
+                    <el-input type="textarea" v-model="addDataModel.trainContent"></el-input>
                 </el-form-item>
 
                 <!-- 上传文件  -->
                 <el-upload class="upload-demo" ref="upload" action="/manager/staffTrain/upload"
                     :on-preview="handlePreview" :on-change="handleChange" :on-remove="handleRemove"
-                    :file-list="fileList" :auto-upload="false" :data="dataModel" :on-success="handleSuccess"
+                    :file-list="fileList" :auto-upload="false" :data="addDataModel" :on-success="handleSuccess"
                     :http-request="uploadFile">
                     <template #trigger>
                         <el-button size="small" type="primary">选取文件</el-button>
@@ -75,26 +75,26 @@
 
         <!-- 查看培训模态框 -->
         <el-dialog title="培训详情" v-model="detailDialogVisible">
-            <el-form :model="detailDataModel" ref="detailForm" :disable="true">
+            <el-form :model="dataModel" ref="detailForm" :disable="true">
                 <el-form-item label="培训名称" prop="trainName">
-                    <el-input v-model="detailDataModel.trainName"></el-input>
+                    <el-input v-model="dataModel.trainName"></el-input>
                 </el-form-item>
                 <el-form-item label="培训内容" prop="trainContent">
-                    <el-input type="textarea" v-model="detailDataModel.trainContent"></el-input>
+                    <el-input type="textarea" v-model="dataModel.trainContent"></el-input>
                 </el-form-item>
                 <el-form-item label="发布时间" prop="createTime">
-                    <el-input v-model="detailDataModel.createTime"></el-input>
+                    <el-input v-model="dataModel.createTime"></el-input>
                 </el-form-item>
                 <el-form-item label="上传人ID" prop="createUserId">
-                    <el-input v-model="detailDataModel.createUserId"></el-input>
+                    <el-input v-model="dataModel.createUserId"></el-input>
                 </el-form-item>
                 <el-form-item label="文件列表" prop="createUserId">
                     <ul id="example-1">
-                        <li v-for="item in detailDataModel.files" :key="item.id">
+                        <li v-for="item in dataModel.files" :key="item.id">
                             <a :href="['/manager/staffTrain/download?trainFileId='+item.id]">{{ item.filePath }}</a>
                         </li>
                     </ul>
-                    <!-- <el-input v-for="item in detailDataModel.files" :key="item.id" ></el-input> -->
+                    <!-- <el-input v-for="item in dataModel.files" :key="item.id" ></el-input> -->
                 </el-form-item>
 
             </el-form>
@@ -104,6 +104,7 @@
                 </span>
             </template>
         </el-dialog>
+
     </div>
 </template>
 
@@ -122,7 +123,7 @@
 
                 // 发布培训
                 addDialogVisible: false,
-                dataModel: {
+                addDataModel: {
                     trainName: '',
                     trainContent: '',
                 },
@@ -133,7 +134,7 @@
 
                 // 培训详情
                 detailDialogVisible: false,
-                detailDataModel: null,
+                dataModel: null,
             }
         },
         methods: {
@@ -141,7 +142,7 @@
                 this.fileData.append('files', file.file); // append增加数据
             },
             submitUpload() {
-                if (this.dataModel.trainName === '') {
+                if (this.addDataModel.trainName === '') {
                     this.message({
                         message: '请输入培训名称',
                         type: 'warning'
@@ -153,19 +154,16 @@
                     } else {
                         this.fileData = new FormData(); // new formData对象
                         this.$refs.upload.submit(); // 提交调用uploadFile函数
-                        this.fileData.append('trainName', this.dataModel.trainName); // 添加机构id
-                        this.fileData.append('trainContent', this.dataModel.trainContent); // 添加机构id
+                        this.fileData.append('trainName', this.addDataModel.trainName); // 添加培训名称
+                        this.fileData.append('trainContent', this.addDataModel.trainContent); // 添加培训内容
+
                         this.postRequest("/manager/staffTrain/upload", this.fileData).then((resp) => {
-                            
                             if (resp.success) {
-                                this.message.success(resp.msg);
                                 this.fileList = [];
                                 this.addDialogVisible = false;
                                 //清空表单
                                 this.$refs['addForm'].resetFields();
                                 this.getTableData(this.pageNo, this.pageSize);
-                            } else {
-                                this.message.error(resp.msg);
                             }
                         });
                     }
@@ -204,18 +202,31 @@
             },
             openDetail(row) {
                 this.getRequest("/manager/staffTrain/" + row.id).then((resp) => {
-                    console.log(resp);
-                    this.detailDataModel = resp.data;
+                    this.dataModel = resp.data;
                     this.detailDialogVisible = true;
                 });
             },
+            deleteTrain(row) {
+                console.log(1);
+                this.$confirm('此操作将删除该培训的所有文件, 是否继续?', '警告', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    this.deleteRequest("/manager/staffTrain/" + row.id).then((resp) => {
+                        this.getTableData(this.pageNo, this.pageSize);
+                    });
+                }).catch(() => {
+                    this.message.info("已取消删除");
+                });
 
+            },
             closeDialog(form) {
-                //关闭弹窗
                 this.addDialogVisible = false;
+                this.detailDialogVisible = false;
                 //清空表单
                 this.$refs[form].resetFields();
-                this.$refs.upload.clearFiles()
+                this.fileList = [];
             }
         },
         created() {

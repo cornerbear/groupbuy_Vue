@@ -34,7 +34,6 @@
                     username: 'admin',
                     password: '123456',
                     code: '1',
-                    rememberMe : null,
                 },
                 rules: {
                     username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],

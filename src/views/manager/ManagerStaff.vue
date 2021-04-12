@@ -73,7 +73,9 @@
             </template>
         </el-dialog>
 
-        <el-drawer title="我嵌套了表格!" v-model="scoreVisible" direction="rtl" size="50%">
+        <el-drawer title="积分详情" v-model="scoreVisible" direction="rtl" size="50%">
+            当前用户ID<el-tag type="success">{{currentUserId}}</el-tag>
+            用户名<el-tag type="success">{{currentUsername}}</el-tag>总评分<el-tag type="success">{{currentUserScore}}</el-tag>
             <el-table :data="scoreData">
                 <el-table-column prop="scoreChange" label="分数变化"></el-table-column>
                 <el-table-column prop="reason" label="原因"></el-table-column>
@@ -116,9 +118,12 @@
                 fileData: '', // 文件上传数据（多文件合一）
                 fileList: [],  // upload多文件数组
 
-                // 员工详情
+                // 员工评分详情
                 scoreVisible: false,
                 scoreData: null,
+                currentUserId: '',
+                currentUsername: '',
+                currentUserScore: '',
             }
         },
         methods: {
@@ -168,7 +173,7 @@
             handlePreview(file) {
                 console.log(file);
             },
-            
+
             //监控上传文件列表
             handleChange(file, fileList) {
                 let existFile = fileList.slice(0, fileList.length - 1).find(f => f.name === file.name);
@@ -194,13 +199,7 @@
                     this.pageCount = resp.pages;
                 });
             },
-            
-            openScore(row) {
-                this.getRequest("/manager/staff/" + row.userId).then((resp) => {
-                    this.dataModel = resp.data;
-                    this.detailDialogVisible = true;
-                });
-            },
+
             deleteStaff(row) {
                 this.$confirm('此操作只会删除该培训员工的员工身份, 是否继续?', '警告', {
                     confirmButtonText: '确定',
@@ -214,6 +213,39 @@
                     this.message.info("已取消删除");
                 });
 
+            },
+
+            openScore(row) {
+                Promise.all([
+                    //查询积分
+                    new Promise((resolve, reject) => {
+                        this.getRequest("/manager/staffScore/" + row.userId).then((resp) => {
+                            console.log(1);
+                            console.log(resp);
+                            console.log(row);
+                            this.currentUserId = row.userId;
+                            this.currentUsername = row.username;
+                            this.currentUserScore = resp.data.score;
+                            resolve(resp)
+                        });
+                    }),
+                    //查询积分记录
+                    new Promise((resolve, reject) => {
+                        this.getRequest("/manager/staffScoreLog/" + row.userId).then((resp) => {
+                            console.log(2);
+                            console.log(resp);
+                            this.scoreData = resp.data;
+                            resolve(resp)
+                        });
+                    }),
+                ]).then(resp => {
+                    //是一个数组，里边的res[index]值就是两个不同的请求返回的结果
+                    if(resp[0].success && resp[1].success){
+                        this.scoreVisible = true;
+                    }
+                    console.log(3);
+                    console.log(resp);
+                })
             },
             closeDialog(form) {
                 this.addDialogVisible = false;

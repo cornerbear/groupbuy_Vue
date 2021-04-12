@@ -22,9 +22,8 @@
             </el-table-column>
             <el-table-column label="操作">
                 <template #default="scope">
-                    <el-button @click="openDetail(scope.row)" type="text" size="small">查看</el-button>
-                    <el-button @click="openUpdate(scope.row)" type="text" size="small">编辑</el-button>
-                    <el-button @click="openSetRole(scope.row)" type="text" size="small">设置身份</el-button>
+                    <el-button @click="openScore(scope.row)" type="text" size="small">查看奖惩</el-button>
+                    <el-button @click="deleteStaff(scope.row)" type="text" size="small">删除员工</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -74,37 +73,14 @@
             </template>
         </el-dialog>
 
-        <!-- 查看员工模态框 -->
-        <el-dialog title="员工详情" v-model="detailDialogVisible">
-            <el-form :model="dataModel" ref="detailForm" :disable="true">
-                <el-form-item label="培训名称" prop="trainName">
-                    <el-input v-model="dataModel.trainName"></el-input>
-                </el-form-item>
-                <el-form-item label="培训内容" prop="trainContent">
-                    <el-input type="textarea" v-model="dataModel.trainContent"></el-input>
-                </el-form-item>
-                <el-form-item label="发布时间" prop="createTime">
-                    <el-input v-model="dataModel.createTime"></el-input>
-                </el-form-item>
-                <el-form-item label="上传人ID" prop="createUserId">
-                    <el-input v-model="dataModel.createUserId"></el-input>
-                </el-form-item>
-                <el-form-item label="文件列表" prop="createUserId">
-                    <ul id="example-1">
-                        <li v-for="item in dataModel.files" :key="item.id">
-                            <a :href="['/manager/staffTrain/download?trainFileId='+item.id]">{{ item.filePath }}</a>
-                        </li>
-                    </ul>
-                    <!-- <el-input v-for="item in dataModel.files" :key="item.id" ></el-input> -->
-                </el-form-item>
-
-            </el-form>
-            <template #footer>
-                <span class="dialog-footer">
-                    <el-button @click="closeDialog('detailForm')">取 消</el-button>
-                </span>
-            </template>
-        </el-dialog>
+        <el-drawer title="我嵌套了表格!" v-model="scoreVisible" direction="rtl" size="50%">
+            <el-table :data="scoreData">
+                <el-table-column prop="scoreChange" label="分数变化"></el-table-column>
+                <el-table-column prop="reason" label="原因"></el-table-column>
+                <el-table-column prop="logTime" label="日期"></el-table-column>
+                <el-table-column prop="actionUserId" label="操作人ID"></el-table-column>
+            </el-table>
+        </el-drawer>
 
     </div>
 </template>
@@ -140,10 +116,9 @@
                 fileData: '', // 文件上传数据（多文件合一）
                 fileList: [],  // upload多文件数组
 
-
                 // 员工详情
-                detailDialogVisible: false,
-                dataModel: null,
+                scoreVisible: false,
+                scoreData: null,
             }
         },
         methods: {
@@ -176,7 +151,7 @@
 
                         this.postRequest("/manager/staff/batchAdd", this.fileData).then((resp) => {
                             if (resp.success) {
-                                this.message.warning("其中"+resp.data+"已存在");
+                                this.message.warning("其中" + resp.data + "已存在");
                                 this.fileList = [];
                                 this.addDialogVisible = false;
                                 //清空表单
@@ -193,6 +168,7 @@
             handlePreview(file) {
                 console.log(file);
             },
+            
             //监控上传文件列表
             handleChange(file, fileList) {
                 let existFile = fileList.slice(0, fileList.length - 1).find(f => f.name === file.name);
@@ -218,20 +194,20 @@
                     this.pageCount = resp.pages;
                 });
             },
-            openDetail(row) {
-                this.getRequest("/manager/staff/" + row.id).then((resp) => {
+            
+            openScore(row) {
+                this.getRequest("/manager/staff/" + row.userId).then((resp) => {
                     this.dataModel = resp.data;
                     this.detailDialogVisible = true;
                 });
             },
-            deleteTrain(row) {
-                console.log(1);
+            deleteStaff(row) {
                 this.$confirm('此操作只会删除该培训员工的员工身份, 是否继续?', '警告', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     type: 'warning'
                 }).then(() => {
-                    this.deleteRequest("/manager/staff/" + row.id).then((resp) => {
+                    this.deleteRequest("/manager/staff/" + row.userId).then((resp) => {
                         this.getTableData(this.pageNo, this.pageSize);
                     });
                 }).catch(() => {

@@ -2,7 +2,7 @@
     @Author  :   zhangxiaojian
     @Time    :   2021/03/28 10:15:00
  -->
- <template>
+<template>
     <div>
 
         <div class="header">
@@ -36,36 +36,40 @@
 
         <!-- 新增员工模态框 -->
         <el-dialog title="新增员工" v-model="addDialogVisible">
-            <el-form :model="addDataModel" ref="addForm">
-                <el-form-item label="培训名称" prop="trainName">
-                    <el-input v-model="addDataModel.trainName"></el-input>
-                </el-form-item>
-                <el-form-item label="培训内容" prop="trainContent">
-                    <el-input type="textarea" v-model="addDataModel.trainContent"></el-input>
-                </el-form-item>
 
-                <!-- 上传文件  -->
-                <el-upload class="upload-demo" ref="upload" action="/manager/staffTrain/upload"
-                    :on-preview="handlePreview" :on-change="handleChange" :on-remove="handleRemove"
-                    :file-list="fileList" :auto-upload="false" :data="addDataModel" :on-success="handleSuccess"
-                    :http-request="uploadFile">
-                    <template #trigger>
-                        <el-button size="small" type="primary">选取文件</el-button>
-                    </template>
-                    <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload"
-                        v-show="false">发 布
-                    </el-button>
-                    <template #tip>
-                        <div class="el-upload__tip">
-                            只能上传 jpg/png 文件，且不超过 500kb
-                        </div>
-                    </template>
-                </el-upload>
+            <!-- 选择器 -->
+            <el-select @change="changeAddMode" v-model="value" placeholder="请选择新增方式">
+                <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+                </el-option>
+            </el-select>
+
+            <el-form :model="addDataModel" ref="addForm" v-if="addStaffMode == 0">
+                <el-form-item label="员工ID" prop="userId">
+                    <el-input v-model="addDataModel.userId"></el-input>
+                </el-form-item>
             </el-form>
+
+            <!-- 上传文件  -->
+            <el-upload class="upload-demo" ref="upload" action="/manager/staff/batch" :on-preview="handlePreview"
+                :on-change="handleChange" :on-remove="handleRemove" :file-list="fileList" :auto-upload="false"
+                :http-request="uploadFile" v-if="addStaffMode == 1">
+                <template #trigger>
+                    <el-button size="small" type="primary">选取文件</el-button>
+                </template>
+                <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload" v-show="false">发
+                    布
+                </el-button>
+                <template #tip>
+                    <div class="el-upload__tip">
+                        只能上传 xls/xlsx 文件，且不超过 100MB
+                    </div>
+                </template>
+            </el-upload>
+
             <template #footer>
                 <span class="dialog-footer">
                     <el-button @click="closeDialog('addForm')">取 消</el-button>
-                    <el-button type="primary" @click="submitUpload">发 布</el-button>
+                    <el-button type="primary" @click="submitUpload">确认新增</el-button>
                 </span>
             </template>
         </el-dialog>
@@ -118,44 +122,61 @@
                 pageNo: 1,
                 pageSize: 5,
 
-                // 发布培训
+                // 新增员工
+                options: [{
+                    value: '0',
+                    label: '单独新增'
+                }, {
+                    value: '1',
+                    label: '批量新增'
+                }],
+                value: '',
                 addDialogVisible: false,
+                addStaffMode: 0,
                 addDataModel: {
-                    trainName: '',
-                    trainContent: '',
+                    userId: null,
                 },
                 // 文件上传
                 fileData: '', // 文件上传数据（多文件合一）
                 fileList: [],  // upload多文件数组
 
 
-                // 培训详情
+                // 员工详情
                 detailDialogVisible: false,
                 dataModel: null,
             }
         },
         methods: {
+            changeAddMode(val) {
+                console.log(val);
+                this.addStaffMode = val;
+            },
             uploadFile(file) {
                 this.fileData.append('files', file.file); // append增加数据
             },
             submitUpload() {
-                if (this.addDataModel.trainName === '') {
-                    this.message({
-                        message: '请输入培训名称',
-                        type: 'warning'
-                    })
-                } else {
+                if (this.addStaffMode == 0) {
+                    // 单独新增
+                    this.postRequest("/manager/staff/singleAdd/" + this.addDataModel.userId).then((resp) => {
+                        if (resp.success) {
+                            console.log(resp);
+                            this.addDialogVisible = false;
+                            //清空表单
+                            this.$refs['addForm'].resetFields();
+                            this.getTableData(this.pageNo, this.pageSize);
+                        }
+                    });
+                } else if (this.addStaffMode == 1) {
                     const isLt100M = this.fileList.every(file => file.size / 1024 / 1024 < 100);
                     if (!isLt100M) {
                         this.$message.error('请检查，上传文件大小不能超过100MB!');
                     } else {
                         this.fileData = new FormData(); // new formData对象
                         this.$refs.upload.submit(); // 提交调用uploadFile函数
-                        this.fileData.append('trainName', this.addDataModel.trainName); // 添加培训名称
-                        this.fileData.append('trainContent', this.addDataModel.trainContent); // 添加培训内容
 
-                        this.postRequest("/manager/staffTrain/upload", this.fileData).then((resp) => {
+                        this.postRequest("/manager/staff/batchAdd", this.fileData).then((resp) => {
                             if (resp.success) {
+                                this.message.warning("其中"+resp.data+"已存在");
                                 this.fileList = [];
                                 this.addDialogVisible = false;
                                 //清空表单

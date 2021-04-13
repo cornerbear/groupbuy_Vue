@@ -42,9 +42,9 @@
                 </el-option>
             </el-select>
 
-            <el-form :model="addDataModel" ref="addForm" v-if="addStaffMode == 0">
+            <el-form :model="addStaffModel" ref="addForm" v-if="addStaffMode == 0">
                 <el-form-item label="员工ID" prop="userId">
-                    <el-input v-model="addDataModel.userId"></el-input>
+                    <el-input v-model="addStaffModel.userId"></el-input>
                 </el-form-item>
             </el-form>
 
@@ -74,16 +74,51 @@
         </el-dialog>
 
         <el-drawer title="积分详情" v-model="scoreVisible" direction="rtl" size="50%">
-            当前用户ID<el-tag type="success">{{currentUserId}}</el-tag>
-            用户名<el-tag type="success">{{currentUsername}}</el-tag>总评分<el-tag type="success">{{currentUserScore}}</el-tag>
-            <el-table :data="scoreData">
-                <el-table-column prop="scoreChange" label="分数变化"></el-table-column>
-                <el-table-column prop="reason" label="原因"></el-table-column>
-                <el-table-column prop="logTime" label="日期"></el-table-column>
-                <el-table-column prop="actionUserId" label="操作人ID"></el-table-column>
-            </el-table>
-        </el-drawer>
+            <div>
+                <div style="margin: 3px;">
+                    <el-card>
+                        当前用户ID<el-tag type="success">{{currentUserId}}</el-tag>
+                        用户名<el-tag type="success">{{currentUsername}}</el-tag>总评分<el-tag type="success">
+                            {{currentUserScore}}
+                        </el-tag>
+                    </el-card>
 
+                    <el-button type="primary" plain @click="innerScoreVisible=true">
+                        添加奖惩记录
+                    </el-button>
+                </div>
+
+                <el-table :data="scoreData">
+                    <el-table-column prop="changeScore" label="分数变化"></el-table-column>
+                    <el-table-column prop="reason" label="原因"></el-table-column>
+                    <el-table-column prop="logTime" label="日期"></el-table-column>
+                    <el-table-column prop="actionUserId" label="操作人ID"></el-table-column>
+                </el-table>
+
+                <el-drawer title="添加奖惩记录" :before-close="handleClose" v-model="innerScoreVisible" :append-to-body="true"
+                    ref="drawer">
+                    <div>
+                        <el-form :rules="rules" :model="addStaffScoreLogModel" ref="addScoreLogFormRef">
+                            <el-form-item label="是否启用" prop="action">
+                                <el-radio v-model="addStaffScoreLogModel.action" :label="true">增加</el-radio>
+                                <el-radio v-model="addStaffScoreLogModel.action" :label="false">减少</el-radio>
+                            </el-form-item>
+                            <el-form-item label="变更分数" prop="changeScore">
+                                <el-input v-model="addStaffScoreLogModel.changeScore"></el-input>
+                            </el-form-item>
+                            <el-form-item label="变更原因" prop="reason">
+                                <el-input v-model="addStaffScoreLogModel.reason"></el-input>
+                            </el-form-item>
+                        </el-form>
+                        <div class="demo-drawer__footer">
+                            <el-button @click="cancelForm">取 消</el-button>
+                            <el-button type="primary" @click="$refs.drawer.handleClose()" :loading="loading">{{ loading
+                                ? '提交中 ...' : '确 定' }}</el-button>
+                        </div>
+                    </div>
+                </el-drawer>
+            </div>
+        </el-drawer>
     </div>
 </template>
 
@@ -111,7 +146,7 @@
                 value: '',
                 addDialogVisible: false,
                 addStaffMode: 0,
-                addDataModel: {
+                addStaffModel: {
                     userId: null,
                 },
                 // 文件上传
@@ -124,6 +159,32 @@
                 currentUserId: '',
                 currentUsername: '',
                 currentUserScore: '',
+                innerScoreVisible: false,
+                addStaffScoreLogModel: {
+                    action: true,
+                    changeScore: '',
+                    reason: '',
+                    userId: null,
+                },
+                loading: false,
+                rules: {
+                    changeScore: [{
+                        validator: (rule, value, callback) => {
+                            if (!value) {
+                                callback(new Error('分数变更不能为空'))
+                            } else {
+                                if (parseFloat(value) == 0) {
+                                    callback(new Error('分数不能为0'))
+                                } else if (!this.isNumber(value)) {
+                                    callback(new Error('请输入2位以内的小数'))
+                                } else {
+                                    callback()
+                                }
+                            }
+                        },
+                        trigger: 'blur'
+                    }]
+                },
             }
         },
         methods: {
@@ -137,7 +198,7 @@
             submitUpload() {
                 if (this.addStaffMode == 0) {
                     // 单独新增
-                    this.postRequest("/manager/staff/singleAdd/" + this.addDataModel.userId).then((resp) => {
+                    this.postRequest("/manager/staff/singleAdd/" + this.addStaffModel.userId).then((resp) => {
                         if (resp.success) {
                             console.log(resp);
                             this.addDialogVisible = false;
@@ -216,36 +277,93 @@
             },
 
             openScore(row) {
+                this.currentUsername = row.username;
+                this.currentUserId = row.userId;
+                this.setStaffScore(row.userId);
+            },
+            setStaffScore(id) {
                 Promise.all([
                     //查询积分
                     new Promise((resolve, reject) => {
-                        this.getRequest("/manager/staffScore/" + row.userId).then((resp) => {
-                            console.log(1);
-                            console.log(resp);
-                            console.log(row);
-                            this.currentUserId = row.userId;
-                            this.currentUsername = row.username;
+                        this.getRequest("/manager/staffScore/" + id).then((resp) => {
                             this.currentUserScore = resp.data.score;
                             resolve(resp)
                         });
                     }),
                     //查询积分记录
                     new Promise((resolve, reject) => {
-                        this.getRequest("/manager/staffScoreLog/" + row.userId).then((resp) => {
-                            console.log(2);
-                            console.log(resp);
+                        this.getRequest("/manager/staffScoreLog/" + id).then((resp) => {
+                            for(var i = 0; i < resp.data.length; i++){
+                                if(resp.data[i].action){
+                                    resp.data[i].changeScore = "增加"+resp.data[i].changeScore;
+                                } else {
+                                    resp.data[i].changeScore = "减少"+resp.data[i].changeScore;
+                                }
+                            }
                             this.scoreData = resp.data;
                             resolve(resp)
                         });
                     }),
                 ]).then(resp => {
                     //是一个数组，里边的res[index]值就是两个不同的请求返回的结果
-                    if(resp[0].success && resp[1].success){
+                    if (resp[0].success && resp[1].success) {
                         this.scoreVisible = true;
                     }
-                    console.log(3);
-                    console.log(resp);
                 })
+            },
+
+            handleClose(done) {
+                if (this.loading) {
+                    return;
+                }
+                console.log(1);
+                this.$confirm('确认保存?', '警告', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    console.log(2);
+                    this.$refs.addScoreLogFormRef.validate((valid) => {
+                        if (valid) {
+                            console.log(3);
+                            this.loading = true;
+                            this.addStaffScoreLogModel.userId = this.currentUserId;
+                            this.timer = setTimeout(() => {
+                                this.postRequest("/manager/staffScoreLog", this.addStaffScoreLogModel).then((resp) => {
+                                    console.log(resp);
+                                    this.setStaffScore(this.currentUserId);
+                                    done();
+                                    this.loading = false;
+                                    //清空表单
+                                    this.$refs.addScoreLogFormRef.resetFields();
+                                });
+                            }, 2000);
+                        } else {
+                            return false;
+                        }
+                    });
+                }).catch(() => {
+                    this.message.info("已取消添加，若不保存请点击取消");
+                });
+            },
+            saveStaffScoreLog() {
+
+            },
+            cancelForm() {
+                this.loading = false;
+                this.dialog = false;
+                clearTimeout(this.timer);
+            },
+            isNumber(val) {
+                var regPos = /^\d+(\.\d{1,2})?$/
+                // var regPos = /^\d+(\.\d+)?$/
+                // var regNeg = /^(-(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*)))$/
+                // || regNeg.test(val)
+                if (regPos.test(val)) {
+                    return true
+                } else {
+                    return false
+                }
             },
             closeDialog(form) {
                 this.addDialogVisible = false;

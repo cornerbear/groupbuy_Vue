@@ -97,7 +97,7 @@
 
                 <el-drawer title="添加奖惩记录" :before-close="handleClose" v-model="innerScoreVisible" :append-to-body="true"
                     ref="drawer">
-                    <div>
+                    <div style="margin: 5px;">
                         <el-form :rules="rules" :model="addStaffScoreLogModel" ref="addScoreLogFormRef">
                             <el-form-item label="是否启用" prop="action">
                                 <el-radio v-model="addStaffScoreLogModel.action" :label="true">增加</el-radio>
@@ -351,7 +351,7 @@
             },
             cancelForm() {
                 this.loading = false;
-                this.dialog = false;
+                this.innerScoreVisible = false;
                 clearTimeout(this.timer);
             },
             isNumber(val) {

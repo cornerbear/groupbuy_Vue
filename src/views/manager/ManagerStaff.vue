@@ -99,7 +99,7 @@
                     ref="drawer">
                     <div style="margin: 5px;">
                         <el-form :rules="rules" :model="addStaffScoreLogModel" ref="addScoreLogFormRef">
-                            <el-form-item label="是否启用" prop="action">
+                            <el-form-item label="" prop="action">
                                 <el-radio v-model="addStaffScoreLogModel.action" :label="true">增加</el-radio>
                                 <el-radio v-model="addStaffScoreLogModel.action" :label="false">减少</el-radio>
                             </el-form-item>

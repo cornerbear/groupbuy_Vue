@@ -1,34 +1,21 @@
 <template>
     <div class="header">
         <el-card>
-            <el-button type="primary" plain @click="addDialogVisible=true">
+            <el-cascader size="medium" :options="regionOptions.provinceData" v-model="region.province"
+                @change="changeProvince" placeholder="请选择省">
+            </el-cascader>
+            <el-cascader size="medium" :options="regionOptions.cityData" v-model="region.city" @change="changeCity"
+                placeholder="请选择市">
+            </el-cascader>
+            <el-cascader size="medium" :options="regionOptions.areaData" v-model="region.area" @change="changeArea"
+                placeholder="请选择区">
+            </el-cascader>
+            <el-cascader size="medium" :options="regionOptions.streetData" v-model="region.street"
+                @change="changeStreet" placeholder="请选择街道">
+            </el-cascader>
+            <el-button type="primary" plain @click="openAddMenuDialog">
                 添加社区
             </el-button>
-        </el-card>
-    </div>
-
-    <!-- 树形控件 -->
-    <div class="menuTree">
-        <el-card>
-            <el-tree :props="treeProps" :data="treeData" show-checkbox node-key="id" :default-expand-all="false"
-                :expand-on-click-node="false" @node-click="handleNodeClick">
-                <template #default="{ node, data }">
-                    <span class="custom-tree-node">
-                        <span>{{node.label}}</span>
-                        <span>
-                            <el-button type="text" size="mini" @click="() => treeDetail(node, data)">
-                                查看
-                            </el-button>
-                            <el-button type="text" size="mini" @click="() => openTreeUpdate(node, data)">
-                                编辑
-                            </el-button>
-                            <el-button type="text" size="mini" @click="() => treeDelete(node, data)">
-                                删除
-                            </el-button>
-                        </span>
-                    </span>
-                </template>
-            </el-tree>
         </el-card>
     </div>
 
@@ -72,74 +59,6 @@
             </span>
         </template>
     </el-dialog>
-    <!-- 修改菜单模态框 -->
-    <el-dialog title="修改菜单" v-model="updateDialogVisible">
-        <el-form :model="dataModel" ref="updateForm" :rules="rules">
-            <el-form-item label="菜单名称" prop="name">
-                <el-input v-model="dataModel.name" autocomplete="off"></el-input>
-            </el-form-item>
-            <el-form-item label="父菜单" prop="parentId">
-                <el-cascader v-model="dataModel.parentId" :options="selectData" :props="selectProps" clearable
-                    placeholder="若为根节点，则不选择" @change="selectChange()"></el-cascader>
-            </el-form-item>
-            <el-form-item label="URL" prop="url">
-                <el-input v-model="dataModel.url" autocomplete="off"></el-input>
-            </el-form-item>
-            <el-form-item label="PATH" prop="path">
-                <el-input v-model="dataModel.path" autocomplete="off"></el-input>
-            </el-form-item>
-            <el-form-item label="component" prop="component">
-                <el-input v-model="dataModel.component" autocomplete="off"></el-input>
-            </el-form-item>
-            <el-form-item label="序号" prop="sort">
-                <el-input v-model="dataModel.sort" autocomplete="off"></el-input>
-            </el-form-item>
-            <el-form-item label="是否启用" prop="enabled">
-                <el-radio v-model="dataModel.enabled" :label=true>是</el-radio>
-                <el-radio v-model="dataModel.enabled" :label=false>否</el-radio>
-            </el-form-item>
-        </el-form>
-        <template #footer>
-            <span class="dialog-footer">
-                <el-button @click="updateDialogVisible = false">取 消</el-button>
-                <el-button type="primary" @click="updateMenu('data')">确 定</el-button>
-            </span>
-        </template>
-    </el-dialog>
-
-    <!-- 查看菜单模态框 -->
-    <el-dialog title="查看菜单" v-model="detailDialogVisible">
-        <el-form :model="dataModel" ref="detailForm" :rules="rules" :disabled="detailFormDisabled">
-            <el-form-item label="菜单名称" prop="name">
-                <el-input v-model="dataModel.name"></el-input>
-            </el-form-item>
-            <el-form-item label="父菜单" prop="parentId">
-                <el-cascader v-model="dataModel.parentId" :options="selectData" :props="selectProps" clearable
-                    placeholder="若为根节点，则不选择" @change="selectChange()"></el-cascader>
-            </el-form-item>
-            <el-form-item label="URL" prop="url">
-                <el-input v-model="dataModel.url"></el-input>
-            </el-form-item>
-            <el-form-item label="PATH" prop="path">
-                <el-input v-model="dataModel.path"></el-input>
-            </el-form-item>
-            <el-form-item label="component" prop="component">
-                <el-input v-model="dataModel.component"></el-input>
-            </el-form-item>
-            <el-form-item label="序号" prop="sort">
-                <el-input v-model="dataModel.sort"></el-input>
-            </el-form-item>
-            <el-form-item label="是否启用" prop="enabled">
-                <el-radio v-model="dataModel.enabled" :label="true">是</el-radio>
-                <el-radio v-model="dataModel.enabled" :label="false">否</el-radio>
-            </el-form-item>
-        </el-form>
-        <template #footer>
-            <span class="dialog-footer">
-                <el-button @click="detailDialogVisible = false">取 消</el-button>
-            </span>
-        </template>
-    </el-dialog>
 </template>
 
 <script>
@@ -150,12 +69,6 @@
         name: "ManagerCommunity",
         data() {
             return {
-                // 树形控件属性
-                treeData: [],
-                treeProps: {
-                    label: 'name'
-                },
-
                 // 表格属性
                 tableData: null,
                 pageCount: null,
@@ -166,51 +79,29 @@
 
                 // 模态框属性
                 addDialogVisible: false,
-                updateDialogVisible: false,
-                detailDialogVisible: false,
-                selectProps: {
-                    checkStrictly: true,
-                    value: 'id',
-                    label: 'name',
-                },
-                selectData: null,
-                addFormModel: {
-                    name: '',
-                    parentId: '',
-                    url: '/admin/**',
-                    path: '',
-                    sort: 1,
-                    enabled: 1,
-                },
-                detailFormDisabled: true,
                 dataModel: null,
-                rules: {
-                    goodsName: [
-                        { required: true, message: '请填写商品名称', trigger: 'blur' },
-                        { min: 3, max: 5, message: '长度在3-5个字符之间', trigger: 'blur' }
-                    ]
-                },
-                parentId: null,
+
                 options: regionData,
                 selectedOptions: [],
+                region: {
+                    province: null,
+                    city: null,
+                    area: null,
+                    street: null,
+                },
+                regionOptions: {
+                    provinceData: null,
+                    cityData: null,
+                    areaData: null,
+                    streetData: null,
+                },
             }
         },
         created() {
-            this.initMenuTree();
-            this.initMenuTable();
+            this.initProvinceSelect();
+            this.initTable();
         },
         methods: {
-            // 初始化树
-            initMenuTree() {
-                this.getRequest("/system/menu/tree").then((resp) => {
-                    this.treeData = resp.data;
-                    this.selectData = resp.data;
-                })
-            },
-            // 初始化表格
-            initMenuTable() {
-                this.setTableData(null, this.pageNo, this.pageSize);
-            },
 
             // 获取表格数据并设置
             setTableData(parentId, pageNo, pageSize) {
@@ -225,89 +116,10 @@
                 })
             },
 
-            // 单击树形触发
-            handleNodeClick(data) {
-                this.setTableData(data.id, this.pageNo, this.pageSize);
-            },
             // 打开添加菜单窗口
-            openAddMenuDialog(node, data) {
+            openAddMenuDialog() {
                 this.addDialogVisible = true;
-            },
-            // 添加菜单
-            addMenu(form) {
-                this.addFormModel.parentId = this.addFormModel.parentId[this.addFormModel.parentId.length - 1];
-                this.postRequest("/system/menu", this.addFormModel).then((res) => {
-                    if (res.success) {
-                        this.addDialogVisible = false;
-                        this.initMenuTree();
-                        this.initMenuTable();
-                    }
-                })
-            },
-
-
-            // 删除菜单
-            delete(id) {
-                this.$confirm('此操作将永久删除该菜单, 是否继续?', '警告', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                }).then(() => {
-                    this.deleteRequest("/system/menu", { id: id }).then((res) => {
-                        this.initMenuTree();
-                        this.initMenuTable();
-                    })
-                }).catch(() => {
-                    this.message.info("已取消删除");
-                });
-            },
-
-            treeDelete(node, data) {
-                this.delete(data.id);
-            },
-            tableDelete(row) {
-                this.delete(row.id);
-            },
-
-            // 更新菜单
-            openTreeUpdate(node, data) {
-                this.openUpdate(data.id);
-            },
-            openTableUpdate(row) {
-                this.openUpdate(row.id);
-            },
-            openUpdate(id) {
-                this.getRequest("/system/menu/" + id).then((res) => {
-                    if (res.success) {
-                        this.dataModel = res.data;
-                        this.updateDialogVisible = true;
-                    }
-                })
-            },
-            updateMenu(form) {
-                this.putRequest("/system/menu", this.dataModel).then((res) => {
-                    if (res.success) {
-                        this.updateDialogVisible = false;
-                        this.initMenuTree();
-                        this.initMenuTable();
-                    }
-                })
-            },
-
-            treeDetail(node, data) {
-                this.openDetail(data.id);
-            },
-            tableDetail(row) {
-                this.openDetail(row.id);
-            },
-            openDetail(id) {
-                this.getRequest("/system/menu/" + id).then((resp) => {
-                    if (resp.success) {
-                        console.log(resp)
-                        this.dataModel = resp.data;
-                        this.detailDialogVisible = true;
-                    }
-                })
+                console.log(regionData);
             },
 
             handleSizeChange(pageSize) {
@@ -318,9 +130,37 @@
                 this.pageNo = pageNo;
                 this.setTableData(null, this.pageNo, this.pageSize)
             },
-            selectChange() {
-                // select的数据是数组形式，需要转换
-                this.dataModel.parentId = this.dataModel.parentId[this.dataModel.parentId.length - 1];
+
+
+            // 初始化表格
+            initTable() {
+                this.setTableData(null, this.pageNo, this.pageSize);
+            },
+            // 初始化省选择框
+            initProvinceSelect() {
+                this.getRequest("/system/region/province").then((resp) => {
+                    this.regionOptions.provinceData = resp.data;
+                })
+            },
+            changeProvince() {
+                this.getRequest("/system/region/city/"+this.region.province).then((resp) => {
+                    this.regionOptions.cityData = resp.data;
+                })
+            },
+            changeCity() {
+                this.getRequest("/system/region/area/"+this.region.city).then((resp) => {
+                    this.regionOptions.areaData = resp.data;
+                })
+
+            },
+            changeArea() {
+                this.getRequest("/system/region/street/"+this.region.area).then((resp) => {
+                    this.regionOptions.streetData = resp.data;
+                })
+
+            },
+            changeStreet() {
+                console.log(this.region.street);
             },
         }
     }

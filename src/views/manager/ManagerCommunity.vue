@@ -1,6 +1,7 @@
 <template>
     <div class="header">
         <el-card>
+            <el-button size="small" icon="el-icon-close" circle @click="cancelSelect"></el-button>
             <el-cascader size="medium" :options="regionOptions.provinceData" v-model="region.province"
                 @change="changeProvince" placeholder="请选择省">
             </el-cascader>
@@ -13,57 +14,84 @@
             <el-cascader size="medium" :options="regionOptions.streetData" v-model="region.street"
                 @change="changeStreet" placeholder="请选择街道">
             </el-cascader>
-            <el-button type="primary" plain @click="openAddMenuDialog">
+            <el-button type="primary" plain @click="openAddCommunityDialog">
                 添加社区
             </el-button>
         </el-card>
     </div>
 
     <!-- 表格控件  -->
-    <div class="menuTable">
-        <el-card>
-            <el-table :data="tableData" border :fit="true">
-                <el-table-column prop="id" label="ID" />
-                <el-table-column prop="name" label="名称" />
-                <el-table-column prop="component" label="component" />
-                <el-table-column prop="path" label="Path" />
-                <el-table-column prop="parentId" label="父ID" />
-                <el-table-column label="操作">
-                    <template #default="scope">
-                        <el-button @click="tableDetail(scope.row)" type="text" size="small">查看</el-button>
-                        <el-button @click="openTableUpdate(scope.row)" type="text" size="small">编辑</el-button>
-                        <el-button @click="tableDelete(scope.row)" type="text" size="small">删除</el-button>
-                    </template>
-                </el-table-column>
-            </el-table>
+    <el-table :data="tableData" border :fit="true">
+        <el-table-column prop="provinceName" label="省" v-if="region.province==null" />
+        <el-table-column prop="cityName" label="市" v-if="region.city==null" />
+        <el-table-column prop="areaName" label="区" v-if="region.area==null" />
+        <el-table-column prop="streetName" label="街" v-if="region.street==null" />
+        <el-table-column prop="communityName" label="社区名称" />
+        <el-table-column prop="detailLocation" label="详细地址" />
+        <el-table-column label="操作">
+            <template #default="scope">
+                <el-button @click="openUpdate(scope.row)" type="text" size="small">编辑</el-button>
+                <el-button @click="tableDelete(scope.row)" type="text" size="small">删除</el-button>
+            </template>
+        </el-table-column>
+    </el-table>
 
-            <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
-                :current-page="currentPage" :page-sizes="[5, 10, 20]" :page-size="5"
-                layout="total, sizes, prev, pager, next, jumper" :total="total" :page-count="pageCount">
-            </el-pagination>
-        </el-card>
-    </div>
+    <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage"
+        :page-sizes="[5, 10, 20]" :page-size="5" layout="total, sizes, prev, pager, next, jumper" :total="total"
+        :page-count="pageCount">
+    </el-pagination>
 
-    <!-- 添加菜单模态框 -->
-    <el-dialog title="添加菜单" v-model="addDialogVisible">
+    <!-- 添加社区模态框 -->
+    <el-dialog title="添加社区" v-model="addDialogVisible">
         <el-form :model="addFormModel" ref="addForm" :rules="rules">
-            <el-form-item label="父菜单" prop="parentId">
-                <el-cascader size="large" :options="options" v-model="selectedOptions" @change="handleChange">
-                </el-cascader>
+            <el-form-item label="社区名称" prop="name">
+                <el-input v-model="addFormModel.name"></el-input>
+            </el-form-item>
+            <el-form-item label="详细地址" prop="detailLocation">
+                <el-input v-model="addFormModel.detailLocation"></el-input>
             </el-form-item>
         </el-form>
         <template #footer>
             <span class="dialog-footer">
                 <el-button @click="addDialogVisible = false">取 消</el-button>
-                <el-button type="primary" @click="addCommunity('addForm')">确 定</el-button>
+                <el-button type="primary" @click="addCommunity()">确 定</el-button>
+            </span>
+        </template>
+    </el-dialog>
+
+    <!-- 修改社区模态框 -->
+    <el-dialog title="修改社区" v-model="updateDialogVisible">
+        <el-form :model="addFormModel" ref="updateForm" :rules="rules">
+            <el-cascader size="medium" :options="regionOptions.provinceData" v-model="region.province"
+                @change="changeProvince" placeholder="请选择省">
+            </el-cascader>
+            <el-cascader size="medium" :options="regionOptions.cityData" v-model="region.city" @change="changeCity"
+                placeholder="请选择市">
+            </el-cascader>
+            <el-cascader size="medium" :options="regionOptions.areaData" v-model="region.area" @change="changeArea"
+                placeholder="请选择区">
+            </el-cascader>
+            <el-cascader size="medium" :options="regionOptions.streetData" v-model="region.street"
+                @change="changeStreet" placeholder="请选择街道">
+            </el-cascader>
+
+            <el-form-item label="社区名称" prop="name">
+                <el-input v-model="addFormModel.name"></el-input>
+            </el-form-item>
+            <el-form-item label="详细地址" prop="detailLocation">
+                <el-input v-model="addFormModel.detailLocation"></el-input>
+            </el-form-item>
+        </el-form>
+        <template #footer>
+            <span class="dialog-footer">
+                <el-button @click="addDialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="updateCommunity">确 定</el-button>
             </span>
         </template>
     </el-dialog>
 </template>
 
 <script>
-
-    import { regionData } from 'element-china-area-data'
 
     export default {
         name: "ManagerCommunity",
@@ -79,10 +107,13 @@
 
                 // 模态框属性
                 addDialogVisible: false,
-                dataModel: null,
+                updateDialogVisible: false,
+                addFormModel: {
+                    name: '',
+                    detailLocation: '',
+                    streeCode: '',
+                },
 
-                options: regionData,
-                selectedOptions: [],
                 region: {
                     province: null,
                     city: null,
@@ -95,6 +126,14 @@
                     areaData: null,
                     streetData: null,
                 },
+                searchModel: {
+                    level: null,
+                    parentCode: null,
+                },
+                rules: {
+                    name: [{ required: true, message: '社区名不能为空', trigger: 'blur' }],
+                    detailLocation: [{ required: true, message: '详细地址不能为空', trigger: 'blur' }]
+                }
             }
         },
         created() {
@@ -103,90 +142,136 @@
         },
         methods: {
 
+            // 打开添加菜单窗口
+            openAddCommunityDialog() {
+                if (this.region.street == null) {
+                    this.message.warning("请先选择完整的省市区街");
+                } else {
+                    this.addDialogVisible = true;
+                }
+            },
+            addCommunity() {
+                this.postRequest("/manager/community", this.addFormModel).then((resp) => {
+                    this.addDialogVisible = false;
+                    this.setTableData(this.pageNo, this.pageSize);
+                })
+            },
+            openUpdate(row) {
+                this.getRequest("/manager/community/" + row.id).then((resp) => {
+                    this.updateDialogVisible = true;
+                    this.addFormModel = resp.data;
+                })
+                this.getRequest("/system/region/allLevel/" + row.id).then((resp) => {
+                    this.regionOptions.provinceData = resp.data.provinceOptions;
+                    this.regionOptions.cityData = resp.data.cityOptions;
+                    this.regionOptions.areaData = resp.data.areaOptions;
+                    this.regionOptions.streetData = resp.data.streetOptions;
+                    this.region.province = resp.data.checkPath.provinceCode;
+                    this.region.city = resp.data.checkPath.cityCode;
+                    this.region.area = resp.data.checkPath.areaCode;
+                    this.region.street = resp.data.checkPath.streetCode;
+                    this.searchModel.level = 'street';
+                    this.searchModel.parentCode = resp.data.checkPath.streetCode;
+                })
+            },
+            updateCommunity() {
+                this.putRequest("/manager/community", this.addFormModel).then((resp) => {
+                    console.log(resp);
+                    if (resp.success) {
+                        this.addFormModel = this.$options.data().addFormModel;
+                        this.updateDialogVisible = false;
+                    }
+                })
+            },
             // 获取表格数据并设置
-            setTableData(parentId, pageNo, pageSize) {
-                this.getRequest("/system/menu/table", {
+            setTableData(pageNo, pageSize) {
+                this.getRequest("/manager/community/table", {
                     pageNo: pageNo,
                     pageSize: pageSize,
-                    parentId: parentId
+                    level: this.searchModel.level,
+                    parentCode: this.searchModel.parentCode,
                 }).then((resp) => {
                     this.tableData = resp.data.records;
                     this.total = resp.data.total;
                     this.pageCount = resp.data.pages;
                 })
             },
-
-            // 打开添加菜单窗口
-            openAddMenuDialog() {
-                this.addDialogVisible = true;
-                console.log(regionData);
-            },
-
             handleSizeChange(pageSize) {
                 this.pageSize = pageSize;
-                this.setTableData(null, this.pageNo, this.pageSize)
+                this.setTableData(this.pageNo, this.pageSize)
             },
             handleCurrentChange(pageNo) {
                 this.pageNo = pageNo;
-                this.setTableData(null, this.pageNo, this.pageSize)
+                this.setTableData(this.pageNo, this.pageSize)
             },
-
 
             // 初始化表格
             initTable() {
-                this.setTableData(null, this.pageNo, this.pageSize);
+                this.setTableData(this.pageNo, this.pageSize);
             },
+
+
             // 初始化省选择框
             initProvinceSelect() {
                 this.getRequest("/system/region/province").then((resp) => {
                     this.regionOptions.provinceData = resp.data;
                 })
             },
-            changeProvince() {
-                this.getRequest("/system/region/city/"+this.region.province).then((resp) => {
+            changeProvince(value) {
+                this.getRequest("/system/region/city/" + this.region.province).then((resp) => {
                     this.regionOptions.cityData = resp.data;
+                    this.searchModel.level = 'province';
+                    this.searchModel.parentCode = value[0];
+                    this.regionOptions.areaData = null;
+                    this.regionOptions.streetData = null;
+                    this.region.city = null;
+                    this.region.area = null;
+                    this.region.street = null;
+                    this.addFormModel.streeCode = '';
+                    this.setTableData(this.pageNo, this.pageSize);
                 })
             },
-            changeCity() {
-                this.getRequest("/system/region/area/"+this.region.city).then((resp) => {
+            changeCity(value) {
+                this.getRequest("/system/region/area/" + this.region.city).then((resp) => {
                     this.regionOptions.areaData = resp.data;
+                    this.searchModel.level = 'city';
+                    this.searchModel.parentCode = value[0];
+                    this.regionOptions.streetData = null;
+                    this.region.area = null;
+                    this.region.street = null;
+                    this.addFormModel.streeCode = '';
+                    this.setTableData(this.pageNo, this.pageSize);
                 })
 
             },
-            changeArea() {
-                this.getRequest("/system/region/street/"+this.region.area).then((resp) => {
+            changeArea(value) {
+                this.getRequest("/system/region/street/" + this.region.area).then((resp) => {
                     this.regionOptions.streetData = resp.data;
+                    this.searchModel.level = 'area';
+                    this.searchModel.parentCode = value[0];
+                    this.region.street = null;
+                    this.addFormModel.streeCode = '';
+                    this.setTableData(this.pageNo, this.pageSize);
                 })
 
             },
-            changeStreet() {
+            changeStreet(value) {
+                this.searchModel.level = 'street';
+                this.searchModel.parentCode = value[0];
+                this.addFormModel.streetCode = value[0];
+                this.setTableData(this.pageNo, this.pageSize);
                 console.log(this.region.street);
             },
+            cancelSelect() {
+                this.region = this.$options.data().region;
+                this.searchModel = this.$options.data().searchModel;
+                this.setTableData(this.pageNo, this.pageSize);
+            }
         }
     }
 </script>
 <style>
-    .custom-tree-node {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        font-size: 14px;
-        padding-right: 8px;
-    }
-
     .header {
         margin-bottom: 5px;
-    }
-
-    .menuTree {
-        width: 30%;
-        float: left;
-    }
-
-    .menuTable {
-        width: 69%;
-        float: left;
-        margin-left: 1%;
     }
 </style>

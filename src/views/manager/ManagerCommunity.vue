@@ -31,7 +31,7 @@
         <el-table-column label="操作">
             <template #default="scope">
                 <el-button @click="openUpdate(scope.row)" type="text" size="small">编辑</el-button>
-                <el-button @click="tableDelete(scope.row)" type="text" size="small">删除</el-button>
+                <el-button @click="deleteCommunity(scope.row)" type="text" size="small">删除</el-button>
             </template>
         </el-table-column>
     </el-table>
@@ -151,14 +151,21 @@
                 }
             },
             addCommunity() {
-                this.postRequest("/manager/community", this.addFormModel).then((resp) => {
-                    this.addDialogVisible = false;
-                    this.setTableData(this.pageNo, this.pageSize);
-                })
+
+                this.$refs.addForm.validate((valid) => {
+                    if (valid) {
+                        this.postRequest("/manager/community", this.addFormModel).then((resp) => {
+                            this.addDialogVisible = false;
+                            this.setTableData(this.pageNo, this.pageSize);
+                        })
+                    } else {
+                        return false;
+                    }
+                });
+
             },
             openUpdate(row) {
                 this.getRequest("/manager/community/" + row.id).then((resp) => {
-                    this.updateDialogVisible = true;
                     this.addFormModel = resp.data;
                 })
                 this.getRequest("/system/region/allLevel/" + row.id).then((resp) => {
@@ -172,16 +179,39 @@
                     this.region.street = resp.data.checkPath.streetCode;
                     this.searchModel.level = 'street';
                     this.searchModel.parentCode = resp.data.checkPath.streetCode;
+                    this.updateDialogVisible = true;
                 })
             },
             updateCommunity() {
-                this.putRequest("/manager/community", this.addFormModel).then((resp) => {
-                    console.log(resp);
-                    if (resp.success) {
-                        this.addFormModel = this.$options.data().addFormModel;
-                        this.updateDialogVisible = false;
+                this.$refs.updateForm.validate((valid) => {
+                    if (valid) {
+                        this.putRequest("/manager/community", this.addFormModel).then((resp) => {
+                            if (resp.success) {
+                                this.addFormModel = this.$options.data().addFormModel;
+                                this.setTableData(this.pageNo, this.pageSize)
+                                this.updateDialogVisible = false;
+                            }
+                        })
+                    } else {
+                        return false;
                     }
-                })
+                });
+            },
+            deleteCommunity(row) {
+                this.$confirm('确认删除?', '警告', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    this.deleteRequest("/manager/community/" + row.id).then((resp) => {
+                        if (resp.success) {
+                            this.setTableData(this.pageNo, this.pageSize)
+                        }
+                    })
+                }).catch(() => {
+                    this.message.info("已取消添加，若不保存请点击取消");
+                });
+
             },
             // 获取表格数据并设置
             setTableData(pageNo, pageSize) {

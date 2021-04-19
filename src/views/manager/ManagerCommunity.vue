@@ -209,7 +209,7 @@
                         }
                     })
                 }).catch(() => {
-                    this.message.info("已取消添加，若不保存请点击取消");
+                    this.message.info("已取消删除");
                 });
 
             },

@@ -15,6 +15,9 @@
             <!-- <el-table-column fixed prop="date" label="日期" width="150">
             </el-table-column> -->
             <el-table-column prop="goodsImg" label="图片">
+                <template #default="scope">
+                    <el-image :fit="fit" style="width:80px;height:80px" :src="scope.row.goodsImg"></el-image>
+                </template>
             </el-table-column>
             <el-table-column prop="goodsName" label="名称">
             </el-table-column>
@@ -25,7 +28,7 @@
             <el-table-column fixed="right" label="操作">
                 <template #default="scope">
                     <el-button @click="openUpdate(scope.row)" type="text" size="small">设置详细信息</el-button>
-                    <el-button type="text" size="small">编辑</el-button>
+                    <el-button @click="deleteGoods(scope.row)" type="text" size="small">删除</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -61,14 +64,21 @@
             <el-form :model="model.updateModel" ref="updateRef" :rules="rules" label-width="100px">
                 <el-row>
                     <el-col :span="12">
-                        <el-upload ref="uploadPic" action="/api/upload" list-type="picture-card"
-                            :class="{ disabled: uploadDisabled }" :limit="1" :on-change="handleChange"
-                            :on-remove="handleRemove" :show-file-list="true" :auto-upload="false" :file-list="fileList"
-                            :data="model.updateModel" :http-request="uploadFile" :on-success="handleAvatarSuccess"
-                            :before-upload="beforeAvatarUpload">
-                            <img v-if="imageUrl" :src="imageUrl" class="avatar" />
-                            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-                        </el-upload>
+                        <div>
+                            <!-- 旧图 -->
+                            <el-image style="width: 100px; height: 100px;float: left;" :src="imgUrl" :fit="fit">
+                            </el-image>
+                            <!-- 新图 -->
+                            <el-upload ref="uploadPic" action="/api/upload" list-type="picture-card"
+                                :class="{ disabled: uploadDisabled }" :limit="1" :on-change="handleChange"
+                                :on-remove="handleRemove" :show-file-list="true" :auto-upload="false"
+                                :file-list="fileList" :data="model.updateModel" :http-request="uploadFile"
+                                :on-success="handleAvatarSuccess" :before-upload="beforeAvatarUpload">
+                                <el-image style="width: 100px; height: 100px;" :fit="fit" v-if="imageUrl"
+                                    :src="imageUrl" class="avatar"></el-image>
+                                <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                            </el-upload>
+                        </div>
                     </el-col>
                     <el-col :span="12">
                         <el-row>
@@ -155,7 +165,7 @@
             <template #footer>
                 <span class="dialog-footer">
                     <el-button @click="visible.update = false">取 消</el-button>
-                    <el-button type="primary" @click="updateGoods()">确认添加</el-button>
+                    <el-button type="primary" @click="updateGoods()">确认修改</el-button>
                 </span>
             </template>
         </el-dialog>
@@ -176,6 +186,7 @@
                 visible: {
                     add: false,
                     update: false,
+                    upload: true,
                 },
                 model: {
                     addModel: {
@@ -184,13 +195,15 @@
                         goodsStock: '',
                     },
                     updateModel: null,
+                    imgUrl: '',
                 },
 
                 isUploadPic: false,
                 uploadDisabled: false,
                 fileData: '', // 文件上传数据（多文件合一）
                 fileList: [],  // upload多文件数组
-
+                imageUrl: null,
+                fit: 'fill',
                 rules: {
                     goodsName: [
                         { required: true, message: '请填写商品名称', trigger: 'blur' },
@@ -206,6 +219,7 @@
                         this.postRequest("/store/goods", this.model.addModel).then((resp) => {
                             if (resp.success) {
                                 this.visible.add = false;
+                                this.model.addModel = this.$options.data().model.addModel;
                                 this.getTableData(this.pageNo, this.pageSize);
                             }
                         });
@@ -214,10 +228,27 @@
                     }
                 });
             },
+            deleteGoods(row) {
+                this.$confirm('确认删除?', '警告', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    this.deleteRequest("/store/goods/" + row.id).then((resp) => {
+                        if (resp.success) {
+                            this.getTableData(this.pageNo, this.pageSize);
+                        }
+                    });
+                }).catch(() => {
+                    this.message.info("已取消删除");
+                });
+
+            },
             openUpdate(row) {
                 this.getRequest("/store/goods/" + row.id).then((resp) => {
                     if (resp.success) {
                         this.visible.update = true;
+                        this.imgUrl = '/file/image?filePath=' + encodeURI(resp.data.goodsImg);
                         this.model.updateModel = resp.data;
                     }
                 });
@@ -230,14 +261,13 @@
                 this.fileData = new FormData(); // new formData对象
                 this.$refs.uploadPic.submit(); // 提交调用uploadFile函数
                 var godsJson = JSON.stringify(this.model.updateModel)
-                this.fileData.append('goods', godsJson); 
+                this.fileData.append('goods', godsJson);
 
                 this.postRequest("/store/goods/update", this.fileData).then((resp) => {
                     if (resp.success) {
                         this.fileList = [];
-                        this.addDialogVisible = false;
-                        //清空表单
-                        this.$refs['addForm'].resetFields();
+                        this.$refs.uploadPic.clearFiles();
+                        this.visible.update = false;
                         this.getTableData(this.pageNo, this.pageSize);
                     }
                 });
@@ -255,7 +285,7 @@
                 this.uploadDisabled = false;
             },
             handleAvatarSuccess(res, file) {
-                this.$refs.uploadPic.clearFiles();
+                console.log(1);
                 this.imageUrl = res.data;
             },
             beforeAvatarUpload(file) {
@@ -271,6 +301,8 @@
                 }
                 return (isJPG || isPNG) && isLt2M;
             },
+
+
             handleSizeChange(pageSize) {
                 this.pageSize = pageSize;
                 this.getTableData(this.pageNo, this.pageSize)
@@ -282,6 +314,9 @@
             getTableData(pageNo, pageSize) {
                 this.getRequest("/store/goods/all/" + pageNo + "/" + pageSize).then((resp) => {
                     this.tableData = resp.records;
+                    this.tableData.forEach(element => {
+                        element.goodsImg = '/file/image?filePath=' + encodeURI(element.goodsImg);
+                    })
                     this.total = resp.total;
                     this.pageCount = resp.pages;
                 });
@@ -302,9 +337,19 @@
         margin-bottom: 5px;
     }
 
+    /* 用于上传框的隐藏 */
+    .disabled .el-upload--picture-card {
+        display: none !important;
+    }
+
     .el-form-item {
         height: 100%;
         width: 100%;
+    }
+
+    .el-upload {
+        width: 100px;
+        height: 100px;
     }
 
     .avatar-uploader .el-upload {
@@ -322,15 +367,15 @@
     .avatar-uploader-icon {
         font-size: 28px;
         color: #8c939d;
-        width: 178px;
-        height: 178px;
-        line-height: 178px;
+        width: 100px;
+        height: 100px;
+        line-height: 100px;
         text-align: center;
     }
 
     .avatar {
-        width: 178px;
-        height: 178px;
+        width: 100px;
+        height: 100px;
         display: block;
     }
 </style>

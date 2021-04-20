@@ -206,8 +206,7 @@
                 fit: 'fill',
                 rules: {
                     goodsName: [
-                        { required: true, message: '请填写商品名称', trigger: 'blur' },
-                        { min: 3, max: 5, message: '长度在3-5个字符之间', trigger: 'blur' }
+                        { required: true, message: '请填写商品名称', trigger: 'blur' }
                     ]
                 },
             }

@@ -52,15 +52,15 @@
                 <el-form-item label="姓名" prop="name">
                     <el-input v-model="dataModel.name"></el-input>
                 </el-form-item>
-                <el-form-item label="手机号" prop="userPhone">
-                    <el-input v-model="dataModel.userPhone"></el-input>
+                <el-form-item label="手机号" prop="phone">
+                    <el-input v-model="dataModel.phone"></el-input>
                 </el-form-item>
-                <el-form-item label="地址" prop="userAddress">
-                    <el-input v-model="dataModel.userAddress"></el-input>
+                <el-form-item label="地址" prop="detailAddress">
+                    <el-input v-model="dataModel.detailAddress"></el-input>
                 </el-form-item>
-                <el-form-item label="用户性别" prop="userSex">
-                    <el-radio v-model="dataModel.userSex" :label="1">男</el-radio>
-                    <el-radio v-model="dataModel.userSex" :label="0">女</el-radio>
+                <el-form-item label="用户性别" prop="sex">
+                    <el-radio v-model="dataModel.sex" :label="true">男</el-radio>
+                    <el-radio v-model="dataModel.sex" :label="false">女</el-radio>
                 </el-form-item>
             </el-form>
             <template #footer>
@@ -82,15 +82,15 @@
                 <el-form-item label="姓名" prop="name">
                     <el-input v-model="dataModel.name"></el-input>
                 </el-form-item>
-                <el-form-item label="手机号" prop="userPhone">
-                    <el-input v-model="dataModel.userPhone"></el-input>
+                <el-form-item label="手机号" prop="phone">
+                    <el-input v-model="dataModel.phone"></el-input>
                 </el-form-item>
-                <el-form-item label="地址" prop="userAddress">
-                    <el-input v-model="dataModel.userAddress"></el-input>
+                <el-form-item label="地址" prop="detailAddress">
+                    <el-input v-model="dataModel.detailAddress"></el-input>
                 </el-form-item>
-                <el-form-item label="用户性别" prop="userSex">
-                    <el-radio v-model="dataModel.userSex" :label="1">男</el-radio>
-                    <el-radio v-model="dataModel.userSex" :label="0">女</el-radio>
+                <el-form-item label="用户性别" prop="sex">
+                    <el-radio v-model="dataModel.sex" :label="true">男</el-radio>
+                    <el-radio v-model="dataModel.sex" :label="false">女</el-radio>
                 </el-form-item>
             </el-form>
             <template #footer>

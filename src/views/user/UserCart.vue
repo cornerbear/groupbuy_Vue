@@ -8,7 +8,7 @@
             <el-card>
                 购物车总价<el-tag type="success">{{cart.totalPrice}}</el-tag>
                 商品数量<el-tag type="success">{{cart.goodsNum}}</el-tag>
-                <el-button type="primary" plain @click="createOrder" style="float:right;">
+                <el-button type="primary" plain @click="openCreateOrder" style="float:right;">
                     生成订单
                 </el-button>
             </el-card>
@@ -39,6 +39,34 @@
             :page-sizes="[5, 10, 20]" :page-size="5" layout="total, sizes, prev, pager, next, jumper" :total="total"
             :page-count="pageCount">
         </el-pagination>
+
+
+        <!-- 生成订单模态框 -->
+        <el-dialog title="生成订单" v-model="visible.add">
+            <el-form :model="model.addModel" ref="form" :rules="rules">
+                <el-form-item label="收货人" prop="consignee">
+                    <el-input v-model="model.addModel.consignee"></el-input>
+                </el-form-item>
+                <el-form-item label="地址" prop="address">
+                    <el-input v-model="model.addModel.address"></el-input>
+                </el-form-item>
+                <el-form-item label="商品价格" prop="goodsPrice">
+                    <el-input v-model="model.addModel.goodsPrice" :disabled="true"></el-input>
+                </el-form-item>
+                <el-form-item label="需支付价格" prop="payPrice">
+                    <el-input v-model="model.addModel.payPrice" :disabled="true"></el-input>
+                </el-form-item>
+                <el-form-item label="备注" prop="userNote">
+                    <el-input type="textarea" v-model="model.addModel.userNote"></el-input>
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="visible.add = false">取 消</el-button>
+                    <el-button type="primary" @click="createOrder()">确认生成订单</el-button>
+                </span>
+            </template>
+        </el-dialog>
     </div>
 </template>
 
@@ -49,7 +77,7 @@
             return {
                 cart: {
                     totalPrice: 0,
-                    goodsNul: 0,
+                    goodsNum: 0,
                 },
                 total: null,
                 tableData: null,
@@ -59,16 +87,45 @@
                 pageSize: 5,
 
                 fit: 'fill',
+
+                visible: {
+                    add: false,
+                },
+                model: {
+                    addModel: {
+                        consignee: '',
+                        address: '',
+                        goodsPrice: '',
+                        payPrice: '',
+                        userNote: '',
+                    },
+                },
             }
         },
         methods: {
+            openCreateOrder() {
+                this.getRequest("/user/cart/checkHaveGoods").then((resp) => {
+                    if (resp.success) {
+                        this.getRequest("/user/order/createOrderDetail").then((resp) => {
+                            if (resp.success) {
+                                this.model.addModel = resp.data;
+                                // this.model.addModel
+                                // this.model.addModel.goodsPrice = resp.data.goodsPrice;
+                                // this.model.addModel.payPrice = resp.data.payPrice;
+                                this.visible.add = true;
+                            }
+                        });
+                    }
+                });
+
+            },
             createOrder() {
                 this.$confirm('确认生成订单?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     type: 'success'
                 }).then(() => {
-                    this.postRequest("/user/order").then((resp) => {
+                    this.postRequest("/user/order", this.model.addModel).then((resp) => {
                         if (resp.success) {
                             this.getTableData(this.pageNo, this.pageSize);
                         }
@@ -78,14 +135,15 @@
                 });
             },
             removeGoodsFromCart(row) {
-                this.$confirm('确认从社区删除该商品?', '警告', {
+                this.$confirm('确认从购物车删除该商品?', '警告', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     type: 'warning'
                 }).then(() => {
-                    this.deleteRequest("/grouper/goods/deleteCommunityGoods/" + row.id).then((resp) => {
+                    this.deleteRequest("/user/cart/" + row.id).then((resp) => {
                         if (resp.success) {
                             this.getTableData(this.pageNo, this.pageSize);
+                            this.visible.add = false;
                         }
                     });
                 }).catch(() => {
@@ -106,7 +164,7 @@
             getTableData(pageNo, pageSize) {
 
                 this.getRequest("/user/cart/all/" + pageNo + "/" + pageSize).then((resp) => {
-                    this.cart = resp.data;
+                    this.cart = resp.data.cart;
                     this.tableData = resp.data.cartItems.records;
                     this.tableData.forEach(element => {
                         element.goodsImg = '/file/image?filePath=' + encodeURI(element.goodsImg);

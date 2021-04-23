@@ -14,30 +14,20 @@
             </el-card>
         </div>
         <el-table :data="table.records" border style="width: 100%" :fit="true">
-            <el-table-column prop="id" label="订单号">
-            </el-table-column>
-            <el-table-column prop="storeName" label="商家名称">
-            </el-table-column>
-            <el-table-column prop="goodsPrice" label="商品价格">
-            </el-table-column>
-            <el-table-column prop="payPrice" label="支付金额">
-            </el-table-column>
-            <el-table-column prop="createTime" label="创建时间">
-            </el-table-column>
-            <el-table-column prop="orderStatus" label="订单状态">
-            </el-table-column>
+            <el-table-column prop="id" label="订单号"></el-table-column>
+            <el-table-column prop="consignee" label="收货人"></el-table-column>
+            <el-table-column prop="address" label="地址"></el-table-column>
+            <el-table-column prop="phone" label="电话"></el-table-column>
+            <el-table-column prop="userNote" label="用户备注"></el-table-column>
+            <el-table-column prop="goodsPrice" label="商品价格"></el-table-column>
+            <el-table-column prop="payPrice" label="支付金额"></el-table-column>
+            <el-table-column prop="createTime" label="创建时间"></el-table-column>
+            <el-table-column prop="orderStatus" label="订单状态"></el-table-column>
             <el-table-column fixed="right" label="操作">
                 <template #default="scope">
-                    <el-button v-if="scope.row.orderStatus==='等待到款'" @click="payForOrder(scope.row)" type="text"
-                        size="small">去支付</el-button>
-                    <el-button v-if="scope.row.orderStatus==='等待到款'" @click="cancelOrder(scope.row)" type="text"
-                        size="small">取消订单</el-button>
-                    <el-button v-if="scope.row.orderStatus==='已发货'" @click="viewLogistics(scope.row)" type="text"
-                        size="small">查看物流</el-button>
-                    <el-button v-if="scope.row.orderStatus==='已送达'" @click="confirmReceive(scope.row)" type="text"
-                        size="small">确认收货</el-button>
-                    <el-button v-if="scope.row.orderStatus==='交易成功'" @click="evaluate(scope.row)" type="text"
-                        size="small">评价</el-button>
+                    <el-button v-if="scope.row.orderStatus==='正在配货'" @click="openDeliver(scope.row)" type="text"
+                        size="small">发货</el-button>
+                    <el-button @click="orderDetail(scope.row)" type="text" size="small">订单详情</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -46,6 +36,25 @@
             :current-page="table.currentPage" :page-sizes="[5, 10, 20]" :page-size="5"
             layout="total, sizes, prev, pager, next, jumper" :total="table.total" :page-count="table.pageCount">
         </el-pagination>
+
+
+        <!-- 发货模态框 -->
+        <el-dialog title="发货" v-model="visible.shipping">
+            <el-form :model="model.shipping" ref="form">
+                <el-form-item label="快递名称" prop="shippingName">
+                    <el-input v-model="model.shipping.shippingName"></el-input>
+                </el-form-item>
+                <el-form-item label="快递单号" prop="shippingCode">
+                    <el-input v-model="model.shipping.shippingCode"></el-input>
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="visible.shipping = false">取 消</el-button>
+                    <el-button type="primary" @click="deliver">确认发货</el-button>
+                </span>
+            </template>
+        </el-dialog>
     </div>
 </template>
 
@@ -62,24 +71,31 @@
                 },
                 pageNo: 1,
                 pageSize: 5,
+                model: {
+                    shipping: {
+                        orderId: '',
+                        shippingName: '',
+                        shippingCode: '',
+                    }
+                },
+                visible: {
+                    shipping: false,
+                },
 
                 fit: 'fill',
             }
         },
         methods: {
-            payForOrder(row) {
-                this.$confirm('确认支付'+row.payPrice+'?', '提示', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'success'
-                }).then(() => {
-                    this.putRequest("/user/order/payForOrder/"+row.id).then((resp) => {
-                        if (resp.success) {
-                            this.getTableData(this.pageNo, this.pageSize);
-                        }
-                    });
-                }).catch(() => {
-                    this.message.info("已取消支付");
+            openDeliver(row) {
+                this.model.shipping.orderId = row.id;
+                this.visible.shipping = true;
+            },
+            deliver() {
+                this.putRequest("/store/order/deliver" , this.model.shipping).then((resp) => {
+                    if (resp.success) {
+                        this.getTableData(this.pageNo, this.pageSize);
+                        this.visible.shipping = false;
+                    }
                 });
             },
             cancelOrder() {
@@ -88,7 +104,7 @@
                     cancelButtonText: '取消',
                     type: 'success'
                 }).then(() => {
-                    this.putRequest("/user/order/cancelOrder/"+row.id).then((resp) => {
+                    this.putRequest("/user/order/cancelOrder/" + row.id).then((resp) => {
                         if (resp.success) {
                             this.getTableData(this.pageNo, this.pageSize);
                         }
@@ -121,23 +137,6 @@
                     this.message.info("已取消生成");
                 });
             },
-            removeGoodsFromCart(row) {
-                this.$confirm('确认从社区删除该商品?', '警告', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                }).then(() => {
-                    this.deleteRequest("/grouper/goods/deleteCommunityGoods/" + row.id).then((resp) => {
-                        if (resp.success) {
-                            this.getTableData(this.pageNo, this.pageSize);
-                        }
-                    });
-                }).catch(() => {
-                    this.message.info("已取消删除");
-                });
-
-            },
-
 
             handleSizeChange(pageSize) {
                 this.pageSize = pageSize;
@@ -148,7 +147,7 @@
                 this.getTableData(this.pageNo, this.pageSize)
             },
             getTableData(pageNo, pageSize) {
-                this.getRequest("/user/order/all/" + pageNo + "/" + pageSize).then((resp) => {
+                this.getRequest("/store/order/all/" + pageNo + "/" + pageSize).then((resp) => {
                     this.table = resp;
                 });
             },

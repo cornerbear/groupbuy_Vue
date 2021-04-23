@@ -43,7 +43,7 @@
 
         <!-- 生成订单模态框 -->
         <el-dialog title="生成订单" v-model="visible.add">
-            <el-form :model="model.addModel" ref="form" :rules="rules">
+            <el-form :model="model.addModel" ref="form">
                 <el-form-item label="收货人" prop="consignee">
                     <el-input v-model="model.addModel.consignee"></el-input>
                 </el-form-item>
@@ -128,6 +128,7 @@
                     this.postRequest("/user/order", this.model.addModel).then((resp) => {
                         if (resp.success) {
                             this.getTableData(this.pageNo, this.pageSize);
+                                this.visible.add = false;
                         }
                     });
                 }).catch(() => {

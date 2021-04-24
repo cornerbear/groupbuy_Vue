@@ -15,9 +15,21 @@
         </div>
         <el-table :data="table.records" border style="width: 100%" :fit="true">
             <el-table-column prop="id" label="订单号"></el-table-column>
-            <el-table-column prop="consignee" label="收货人"></el-table-column>
-            <el-table-column prop="address" label="地址"></el-table-column>
-            <el-table-column prop="phone" label="电话"></el-table-column>
+            <el-table-column label="收货信息">
+                <template #default="scope">
+                    <el-popover effect="light" trigger="hover" placement="top">
+                      <template #default>
+                        <p>电话: {{ scope.row.phone }}</p>
+                        <p>地址: {{ scope.row.address }}</p>
+                      </template>
+                      <template #reference>
+                        <div class="name-wrapper">
+                          <el-tag size="medium">{{ scope.row.consignee }}</el-tag>
+                        </div>
+                      </template>
+                    </el-popover>
+                  </template>
+            </el-table-column>
             <el-table-column prop="userNote" label="用户备注"></el-table-column>
             <el-table-column prop="goodsPrice" label="商品价格"></el-table-column>
             <el-table-column prop="payPrice" label="支付金额"></el-table-column>
@@ -27,6 +39,8 @@
                 <template #default="scope">
                     <el-button v-if="scope.row.orderStatus==='正在配货'" @click="openDeliver(scope.row)" type="text"
                         size="small">发货</el-button>
+                    <el-button v-if="scope.row.orderStatus==='已发货'" @click="confirmArrived(scope.row)" type="text"
+                        size="small">确认送达</el-button>
                     <el-button @click="orderDetail(scope.row)" type="text" size="small">订单详情</el-button>
                 </template>
             </el-table-column>
@@ -91,20 +105,20 @@
                 this.visible.shipping = true;
             },
             deliver() {
-                this.putRequest("/store/order/deliver" , this.model.shipping).then((resp) => {
+                this.putRequest("/store/order/deliver", this.model.shipping).then((resp) => {
                     if (resp.success) {
                         this.getTableData(this.pageNo, this.pageSize);
                         this.visible.shipping = false;
                     }
                 });
             },
-            cancelOrder() {
-                this.$confirm('确认取消订单?', '提示', {
+            confirmArrived(row) {
+                this.$confirm('确认已送达?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     type: 'success'
                 }).then(() => {
-                    this.putRequest("/user/order/cancelOrder/" + row.id).then((resp) => {
+                    this.putRequest("/store/order/confirmArrived/" + row.id).then((resp) => {
                         if (resp.success) {
                             this.getTableData(this.pageNo, this.pageSize);
                         }

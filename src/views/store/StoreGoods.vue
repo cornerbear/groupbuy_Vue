@@ -267,6 +267,7 @@
                         this.fileList = [];
                         this.$refs.uploadPic.clearFiles();
                         this.visible.update = false;
+                        this.uploadDisabled = false;
                         this.getTableData(this.pageNo, this.pageSize);
                     }
                 });
@@ -284,7 +285,6 @@
                 this.uploadDisabled = false;
             },
             handleAvatarSuccess(res, file) {
-                console.log(1);
                 this.imageUrl = res.data;
             },
             beforeAvatarUpload(file) {

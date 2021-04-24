@@ -10,11 +10,13 @@
                     <el-image :fit="fit" style="width:80px;height:80px" :src="scope.row.goodsImg"></el-image>
                 </template>
             </el-table-column>
+            <el-table-column prop="storeName" label="店名">
+            </el-table-column>
             <el-table-column prop="goodsName" label="名称">
             </el-table-column>
             <el-table-column prop="goodsPrice" label="价格">
             </el-table-column>
-            <el-table-column prop="goodsStock" label="库存">
+            <el-table-column prop="goodsUnit" label="单位">
             </el-table-column>
             <el-table-column fixed="right" label="操作">
                 <template #default="scope">

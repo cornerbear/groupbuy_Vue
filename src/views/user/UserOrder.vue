@@ -36,7 +36,7 @@
                         size="small">查看物流</el-button>
                     <el-button v-if="scope.row.orderStatus==='已送达'" @click="confirmReceive(scope.row)" type="text"
                         size="small">确认收货</el-button>
-                    <el-button v-if="scope.row.orderStatus==='交易成功'" @click="evaluate(scope.row)" type="text"
+                    <el-button v-if="scope.row.orderStatus==='交易成功'" @click="openEvaluate(scope.row)" type="text"
                         size="small">评价</el-button>
                     <el-button @click="openOrderDetail(scope.row)" type="text" size="small">查看详情</el-button>
                 </template>
@@ -64,9 +64,33 @@
                     </el-table-column>
                     <el-table-column prop="goodsUnit" label="商品单位">
                     </el-table-column>
+                    <el-table-column fixed="right" label="操作">
+                        <template #default="scope">
+                            <el-button @click="openEvaluate(scope.row)" type="text" size="small">评价</el-button>
+                        </template>
+                    </el-table-column>
                 </el-table>
             </el-card>
         </el-drawer>
+
+        <!-- 商品评价模态框 -->
+        <el-dialog title="商品评价" v-model="visible.evaluate">
+            <el-form :model="model.evaluateModel" ref="form">
+                <el-form-item label="评价等级" prop="level">
+                    <el-rate v-model="model.evaluateModel.level"></el-rate>
+                </el-form-item>
+                <el-form-item label="用户评价" prop="userNote">
+                    <el-input v-model="model.evaluateModel.userNote"></el-input>
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="visible.evaluate = false">取 消</el-button>
+                    <el-button type="primary" @click="evaluate">发布评价</el-button>
+                </span>
+            </template>
+        </el-dialog>
+
     </div>
 </template>
 
@@ -83,8 +107,15 @@
                 },
                 pageNo: 1,
                 pageSize: 5,
+                model: {
+                    evaluateModel: {
+                        orderItemId: null,
+
+                    },
+                },
                 visible: {
                     drawer: false,
+                    evaluate: false,
                 },
                 orderItemTable: null,
                 direction: 'ttb',
@@ -141,8 +172,20 @@
                     this.message.info("已取消生成");
                 });
             },
+            openEvaluate(row) {
+                this.getRequest("/user/order/confirmOrderFinish/" + row.id).then((resp) => {
+                    if (resp.success) {
+                        this.visible.evaluate = true;
+                        this.model.evaluateModel.orderItemId = row.id;
+                    }
+                });
+            },
             evaluate() {
-
+                this.postRequest("/user/goods/evaluate",this.model.evaluateModel).then((resp) => {
+                    if (resp.success) {
+                        this.visible.evaluate = false;
+                    }
+                });
             },
             openOrderDetail(row) {
                 this.getRequest("/user/order/orderItems/" + row.id).then((resp) => {
@@ -152,7 +195,6 @@
                             element.goodsImg = '/file/image?filePath=' + encodeURI(element.goodsImg);
                         })
                         this.visible.drawer = true;
-                        console.log(1);
                     }
                 });
             },

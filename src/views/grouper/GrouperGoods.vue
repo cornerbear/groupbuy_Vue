@@ -14,13 +14,15 @@
                             <el-image :fit="fit" style="width:80px;height:80px" :src="scope.row.goodsImg"></el-image>
                         </template>
                     </el-table-column>
+                    <el-table-column prop="storeName" label="店名">
+                    </el-table-column>
                     <el-table-column prop="goodsName" label="名称">
                     </el-table-column>
                     <el-table-column prop="goodsPrice" label="价格">
                     </el-table-column>
-                    <el-table-column prop="goodsStock" label="库存">
+                    <el-table-column prop="goodsUnit" label="单位">
                     </el-table-column>
-                    <el-table-column fixed="right" label="操作">
+                    <el-table-column fixed="right" label="操作"> 
                         <template #default="scope">
                             <el-button @click="deleteGoodsFromCommunity(scope.row)" type="text" size="small">从社区删除
                             </el-button>
@@ -48,11 +50,13 @@
                             <el-image :fit="fit" style="width:80px;height:80px" :src="scope.row.goodsImg"></el-image>
                         </template>
                     </el-table-column>
+                    <el-table-column prop="storeName" label="店名">
+                    </el-table-column>
                     <el-table-column prop="goodsName" label="名称">
                     </el-table-column>
                     <el-table-column prop="goodsPrice" label="价格">
                     </el-table-column>
-                    <el-table-column prop="goodsStock" label="库存">
+                    <el-table-column prop="goodsUnit" label="单位">
                     </el-table-column>
                     <el-table-column fixed="right" label="操作">
                         <template #default="scope">
@@ -153,7 +157,6 @@
                 });
             },
             changeTab(tab, event) {
-                console.log(tab.props.name);
                 if (tab.props.name == 'selectedGoods') {
                     this.select = true;
                 } else {
@@ -161,9 +164,6 @@
                 }
                 this.getTableData(this.pageNo, this.pageSize);
             },
-            resetForm(formName) {
-                this.$refs[formName].resetFields();
-            }
         },
         created() {
             this.select = true;

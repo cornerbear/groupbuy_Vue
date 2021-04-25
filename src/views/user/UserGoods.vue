@@ -3,7 +3,7 @@
     @Time    :   2021/04/20 15:40:00
  -->
 <template>
-    <div>
+    <div id="app">
         <el-table :data="tableData" border style="width: 100%" :fit="true">
             <el-table-column prop="goodsImg" label="图片">
                 <template #default="scope">
@@ -20,8 +20,8 @@
             </el-table-column>
             <el-table-column fixed="right" label="操作">
                 <template #default="scope">
-                    <el-button @click="addGoodsToCart(scope.row)" type="text" size="small">添加入购物车
-                    </el-button>
+                    <el-button @click="addGoodsToCart(scope.row)" type="text" size="small">添加入购物车</el-button>
+                    <el-button @click="openGoodsEvaluate(scope.row)" type="text" size="small">查看评价</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -32,6 +32,21 @@
         </el-pagination>
 
 
+        <el-drawer title="商品评价" v-model="visible.goodsEvalute" size="30%">
+            <el-card>
+                <el-table :data="table.goodsEvalute" height="700" border style="width: 100%" :fit="true">
+                    <el-table-column label="评分" width="150px">
+                        <template #default="scope">
+                            <el-rate disabled v-model="scope.row.level"></el-rate>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="userNote" label="用户评价">
+                    </el-table-column>
+                    <el-table-column prop="createTime" label="评价时间">
+                    </el-table-column>
+                </el-table>
+            </el-card>
+        </el-drawer>
     </div>
 </template>
 
@@ -47,6 +62,13 @@
                 pageNo: 1,
                 pageSize: 5,
 
+                visible: {
+                    goodsEvalute: false,
+                },
+                table: {
+                    goodsEvalute: null,
+                },
+
                 fit: 'fill',
             }
         },
@@ -55,6 +77,14 @@
                 this.postRequest("/user/cart/" + row.id).then((resp) => {
                     if (resp.success) {
                         this.getTableData(this.pageNo, this.pageSize);
+                    }
+                });
+            },
+            openGoodsEvaluate(row) {
+                this.getRequest("/user/goods/evaluate/" + row.id).then((resp) => {
+                    if (resp.success) {
+                        this.table.goodsEvalute = resp.data;
+                        this.visible.goodsEvalute = true;
                     }
                 });
             },
@@ -69,12 +99,12 @@
             getTableData(pageNo, pageSize) {
 
                 this.getRequest("/user/goods/all/" + pageNo + "/" + pageSize).then((resp) => {
-                        this.tableData = resp.records;
-                        this.tableData.forEach(element => {
-                            element.goodsImg = '/file/image?filePath=' + encodeURI(element.goodsImg);
-                        })
-                        this.total = resp.total;
-                        this.pageCount = resp.pages;
+                    this.tableData = resp.records;
+                    this.tableData.forEach(element => {
+                        element.goodsImg = '/file/image?filePath=' + encodeURI(element.goodsImg);
+                    })
+                    this.total = resp.total;
+                    this.pageCount = resp.pages;
                 });
             },
         },
@@ -89,5 +119,4 @@
     .header {
         margin-bottom: 5px;
     }
-
 </style>

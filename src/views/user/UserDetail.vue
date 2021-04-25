@@ -7,7 +7,6 @@
 
         <div class="header">
             <el-card>
-                <el-button size="small" icon="el-icon-close" circle @click="cancelSelect"></el-button>
                 <el-button type="primary" plain @click="applyGrouper">申请团长</el-button>
                 <el-button type="primary" plain @click="updatePasswordDialog = true">修改密码</el-button>
             </el-card>

@@ -36,8 +36,6 @@
                         size="small">查看物流</el-button>
                     <el-button v-if="scope.row.orderStatus==='已送达'" @click="confirmReceive(scope.row)" type="text"
                         size="small">确认收货</el-button>
-                    <el-button v-if="scope.row.orderStatus==='交易成功'" @click="openEvaluate(scope.row)" type="text"
-                        size="small">评价</el-button>
                     <el-button @click="openOrderDetail(scope.row)" type="text" size="small">查看详情</el-button>
                 </template>
             </el-table-column>
@@ -66,7 +64,20 @@
                     </el-table-column>
                     <el-table-column fixed="right" label="操作">
                         <template #default="scope">
-                            <el-button @click="openEvaluate(scope.row)" type="text" size="small">评价</el-button>
+                            <el-button v-if="scope.row.userNote==null" @click="openEvaluate(scope.row)" type="text"
+                                size="small">评价</el-button>
+                            <el-popover v-if="scope.row.userNote!=null" effect="light" trigger="hover" placement="top">
+                                <template #default>
+                                    <p>评分: {{ scope.row.level }}</p>
+                                    <p>内容: {{ scope.row.userNote }}</p>
+                                    <p>时间: {{ scope.row.createTime }}</p>
+                                </template>
+                                <template #reference>
+                                    <div class="name-wrapper">
+                                        <el-tag size="medium">{{ scope.row.userNote }}</el-tag>
+                                    </div>
+                                </template>
+                            </el-popover>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -181,13 +192,24 @@
                 });
             },
             evaluate() {
-                this.postRequest("/user/goods/evaluate",this.model.evaluateModel).then((resp) => {
+                this.postRequest("/user/goods/evaluate", this.model.evaluateModel).then((resp) => {
                     if (resp.success) {
                         this.visible.evaluate = false;
+
+                        this.getRequest("/user/order/orderItems/" + this.model.evaluateModel.orderItemId).then((resp) => {
+                            if (resp.success) {
+                                this.orderItemTable = resp.data;
+                                this.orderItemTable.forEach(element => {
+                                    element.goodsImg = '/file/image?filePath=' + encodeURI(element.goodsImg);
+                                })
+                                this.visible.drawer = true;
+                            }
+                        });
                     }
                 });
             },
             openOrderDetail(row) {
+                this.model.evaluateModel.orderItemId = row.id;
                 this.getRequest("/user/order/orderItems/" + row.id).then((resp) => {
                     if (resp.success) {
                         this.orderItemTable = resp.data;

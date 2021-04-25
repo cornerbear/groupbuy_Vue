@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <el-container style="border: 1px solid #eee">
+    <el-container id="container" style="border: 1px solid #eee">
       <el-header style="text-align: right; font-size: 12px">
         <el-dropdown>
           <i class="el-icon-setting" style="margin-right: 15px"></i>
@@ -14,7 +14,7 @@
         </el-dropdown>
         <span>王小虎</span>
       </el-header>
-      <el-container>
+      <el-container id="down-container">
         <!-- 菜单栏 -->
         <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
           <el-menu router :default-active="this.$route.name">
@@ -25,14 +25,12 @@
             </el-submenu>
           </el-menu>
         </el-aside>
-        <el-container>
+        <el-container id="container">
           <!-- 主内容 -->
           <el-main>
-
             <router-view></router-view>
-
           </el-main>
-          <el-footer id="footer">Footer</el-footer>
+          <el-footer style="height: 20%;">Footer</el-footer>
         </el-container>
       </el-container>
     </el-container>
@@ -61,28 +59,45 @@
 
 <style>
   body {
-    height : 100vh;
+    height: 100vh;
     margin: 0;
     padding: 8px;
     box-sizing: border-box;
   }
+
+  #down-container {
+    height: 90%;
+  }
+  #container {
+    height: 100%;
+  }
   .el-container {
     height: 100%;
   }
+
+
   #app {
     height: 100%;
   }
+
   .el-header {
     background-color: #B3C0D1;
     color: #333;
-    line-height: 60px;
+    height: 10% !important;
   }
 
   .el-aside {
     color: #333;
-    height: 100%;
+    height: 90%;
   }
-  #footer {
+
+  .el-main {
+    height: 90%;
+  }
+
+  .el-footer {
+    height: 10% !important;
     background-color: #00b7ff;
   }
+
 </style>

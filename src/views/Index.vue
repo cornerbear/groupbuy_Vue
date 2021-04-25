@@ -88,7 +88,7 @@
 
   .el-aside {
     color: #333;
-    height: 90%;
+    height: 100%;
   }
 
   .el-main {

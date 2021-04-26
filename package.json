@@ -9,6 +9,7 @@
   "dependencies": {
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
+    "echarts": "^5.1.0",
     "element-china-area-data": "^5.0.2",
     "element-plus": "^1.0.2-beta.28",
     "vue": "^3.0.0",

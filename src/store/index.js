@@ -30,12 +30,12 @@ export default createStore({
       state.currentSession = currentSession;
     },
     addMessage(state, msg) {
-      let mss = state.sessions[state.currentHr.username + '#' + msg.to];
+      let mss = state.sessions[state.currentUser.username + '#' + msg.to];
       if (!mss) {
-        // state.sessions[state.currentHr.username+'#'+msg.to] = [];
-        Vue.set(state.sessions, state.currentHr.username + '#' + msg.to, []);
+        // state.sessions[state.currentUser.username+'#'+msg.to] = [];
+        Vue.set(state.sessions, state.currentUser.username + '#' + msg.to, []);
       }
-      state.sessions[state.currentHr.username + '#' + msg.to].push({
+      state.sessions[state.currentUser.username + '#' + msg.to].push({
         content: msg.content,
         date: new Date(),
         self: !msg.notSelf
@@ -48,7 +48,7 @@ export default createStore({
         state.sessions = JSON.parse(data);
       }
     },
-    INIT_HR(state, data) {
+    INIT_USER(state, data) {
       state.users = data;
     }
   },

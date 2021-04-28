@@ -72,7 +72,6 @@
             },
             checkLogin() {
                 this.getRequest('/checkLogin').then((resp) => {
-                    console.log(resp);
                     if (resp.success) {
                         this.$store.commit('INIT_CURRENTUSER', resp.data);
                         window.sessionStorage.setItem("user", JSON.stringify(resp.data));

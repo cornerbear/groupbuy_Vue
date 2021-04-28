@@ -57,7 +57,7 @@
                         this.postRequest('/doLogin', this.loginForm).then((resp) => {
                             this.loading = false;
                             if (resp) {
-                                this.$store.commit('INIT_CURRENTHR', resp.data);
+                                this.$store.commit('INIT_CURRENTUSER', resp.data);
                                 window.sessionStorage.setItem("user", JSON.stringify(resp.data));
                                 let path = this.$route.query.redirect;
                                 this.$router.replace((path == '/' || path == undefined) ? '/index' : path);
@@ -74,7 +74,7 @@
                 this.getRequest('/checkLogin').then((resp) => {
                     console.log(resp);
                     if (resp.success) {
-                        this.$store.commit('INIT_CURRENTHR', resp.data);
+                        this.$store.commit('INIT_CURRENTUSER', resp.data);
                         window.sessionStorage.setItem("user", JSON.stringify(resp.data));
                         let path = this.$route.query.redirect;
                         this.$router.replace((path == '/' || path == undefined) ? '/index' : path);

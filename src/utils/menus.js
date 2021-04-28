@@ -8,8 +8,6 @@ export const initMenu = (router, store) => {
         if (data) {
             store.commit('initRoutes', data);
             routerPackag(data, router);
-            console.log(router);
-            console.log(router.getRoutes());
             // store.dispatch('connect');
         }
     })
@@ -20,7 +18,6 @@ export const routerPackag = (routes, router) => {
             router.addRoute("Index", {
                 path: `${itemRouter.path}`,
                 name: itemRouter.name,
-                iconCls: itemRouter.iconCls,
                 component: () => import(`../views/${itemRouter.component}.vue`)
             });
         }

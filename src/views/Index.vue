@@ -23,11 +23,8 @@
           <el-menu router :default-active="this.$route.name">
             <!-- v-if="item.enabled" -->
             <el-submenu v-for="(item,index) in routes" :key="index" :index="String(index)">
-              <template #title><i :class="item.iconCls"></i>{{item.name}}</template>
-              <el-menu-item v-for="(item2,index2) in item.children" :index="item2.path">
-                <i :class="item2.iconCls"></i>
-                {{item2.name}}
-              </el-menu-item>
+              <template #title><i class="el-icon-setting"></i>{{item.name}}</template>
+              <el-menu-item v-for="(item2,index2) in item.children" :index="item2.path">{{item2.name}}</el-menu-item>
             </el-submenu>
           </el-menu>
         </el-aside>
@@ -36,14 +33,7 @@
           <el-main>
             <router-view></router-view>
           </el-main>
-          <el-footer>
-            <div>
-              Copyright © 2021 zhangxiaojian
-            </div>
-            <div>
-              Powered by Java 1.8 And vue-cli v4.5.11
-            </div>
-          </el-footer>
+          <el-footer style="height: 20%;">Footer</el-footer>
         </el-container>
       </el-container>
     </el-container>
@@ -79,6 +69,7 @@
     },
     created() {
       this.user = this.$store.state.currentUser;
+      console.log(this.user);
     },
     computed: {
       routes() {
@@ -130,8 +121,6 @@
 
   .el-footer {
     height: 10% !important;
-    background-color: #00b7ff57;
-    text-align: center;
-    padding: 10px;
+    background-color: #00b7ff;
   }
 </style>

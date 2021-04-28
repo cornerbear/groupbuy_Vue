@@ -54,7 +54,7 @@
                 this.$refs.loginForm.validate((valid) => {
                     if (valid) {
                         this.loading = true;
-                        this.postRequest('/doLogin', this.loginForm).then(resp => {
+                        this.postRequest('/doLogin', this.loginForm).then((resp) => {
                             this.loading = false;
                             if (resp) {
                                 this.$store.commit('INIT_CURRENTHR', resp.data);
@@ -70,9 +70,23 @@
                     }
                 });
             },
+            checkLogin() {
+                this.getRequest('/checkLogin').then((resp) => {
+                    console.log(resp);
+                    if (resp.success) {
+                        this.$store.commit('INIT_CURRENTHR', resp.data);
+                        window.sessionStorage.setItem("user", JSON.stringify(resp.data));
+                        let path = this.$route.query.redirect;
+                        this.$router.replace((path == '/' || path == undefined) ? '/index' : path);
+                    }
+                })
+            },
             toRegister() {
                 this.$router.push('register');
             }
+        },
+        created() {
+            this.checkLogin();
         }
     }
 </script>

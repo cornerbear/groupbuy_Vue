@@ -19,7 +19,7 @@ export default createStore({
     logout(state) {
       window.localStorage.removeItem('user');
     },
-    INIT_CURRENTUSER(state, user) {
+    INIT_CURRENTHR(state, user) {
       state.currentUser = user;
     },
     initRoutes(state, data) {

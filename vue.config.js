@@ -1,8 +1,5 @@
-// proxyObj['/ws'] = {
-//     ws: true,
-//     target: "ws://localhost:8888"
-// };
 module.exports = {
+    publicPath: './',
     devServer: {
         host: 'localhost',
         port: 8080,

@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
 
 const routes = [
   {
@@ -19,20 +19,7 @@ const routes = [
     hidden: true,
     meta: {
       roles: ['admin', 'user']
-    },
-    children: [
-      {
-        path: '/chat',
-        name: '在线聊天',
-        component: () => import('../views/Home.vue'),
-        hidden: true
-      }, {
-        path: '/userInfo',
-        name: '个人中心',
-        component: () => import('../views/About.vue'),
-        hidden: true
-      }
-    ]
+    }
   }, {
     path: '/*',
     redirect: '/index'
@@ -40,7 +27,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
+  history: createWebHashHistory(),
   routes
 })
 

@@ -1,18 +1,21 @@
 <template>
   <div id="app">
     <el-container id="container" style="border: 1px solid #eee">
-      <el-header style="text-align: right; font-size: 12px">
-        <el-dropdown>
-          <i class="el-icon-setting" style="margin-right: 15px"></i>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item>查看</el-dropdown-item>
-              <el-dropdown-item>新增</el-dropdown-item>
-              <el-dropdown-item>删除</el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
-        <span>王小虎</span>
+      <el-header>
+        <div style="height: 100%; width: 400px; float: left;">
+          <p style="height: 100%; font-size: 40px;margin: 0; vertical-align:middle;">社区团购管理系统</p>
+        </div>
+        <div style="height: 100%; width: 200px; float: right;padding: 20px;">
+          <el-dropdown>
+            <i class="el-icon-setting"></i>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item @click.native="logout">退出登录</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+          <span>{{user.name!=null?user.name:user.username}}</span>
+        </div>
       </el-header>
       <el-container id="down-container">
         <!-- 菜单栏 -->
@@ -20,17 +23,27 @@
           <el-menu router :default-active="this.$route.name">
             <!-- v-if="item.enabled" -->
             <el-submenu v-for="(item,index) in routes" :key="index" :index="String(index)">
-              <template #title><i class="el-icon-setting"></i>{{item.name}}</template>
-              <el-menu-item v-for="(item2,index2) in item.children" :index="item2.path">{{item2.name}}</el-menu-item>
+              <template #title><i :class="item.iconCls"></i>{{item.name}}</template>
+              <el-menu-item v-for="(item2,index2) in item.children" :index="item2.path">
+                <i :class="item2.iconCls"></i>
+                {{item2.name}}
+              </el-menu-item>
             </el-submenu>
           </el-menu>
         </el-aside>
         <el-container id="container">
           <!-- 主内容 -->
           <el-main>
-            <router-view></router-view>
+            <router-view :key="Math.random()"></router-view>
           </el-main>
-          <el-footer style="height: 20%;">Footer</el-footer>
+          <el-footer>
+            <div>
+              Copyright © 2021 zhangxiaojian
+            </div>
+            <div>
+              Powered by Java 1.8 And vue-cli v4.5.11
+            </div>
+          </el-footer>
         </el-container>
       </el-container>
     </el-container>
@@ -40,14 +53,33 @@
 <script>
   export default {
     data() {
-      const item = {
-        date: '2016-05-02',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      };
       return {
-        tableData: Array(5).fill(item)
+        user: null,
       }
+    },
+    methods: {
+      logout() {
+        this.$confirm('此操作将注销登录, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.getRequest("/logout").then((resp) => {
+            window.sessionStorage.removeItem("user")
+            this.$store.commit('initRoutes', []);
+            this.$router.replace("/");
+          });
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消操作'
+          });
+        });
+      },
+    },
+    created() {
+      this.user = this.$store.state.currentUser;
+      console.log(this.user);
     },
     computed: {
       routes() {
@@ -68,13 +100,14 @@
   #down-container {
     height: 90%;
   }
+
   #container {
     height: 100%;
   }
+
   .el-container {
     height: 100%;
   }
-
 
   #app {
     height: 100%;
@@ -97,7 +130,8 @@
 
   .el-footer {
     height: 10% !important;
-    background-color: #00b7ff;
+    background-color: #00b7ff57;
+    text-align: center;
+    padding: 10px;
   }
-
 </style>

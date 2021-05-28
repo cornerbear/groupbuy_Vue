@@ -50,7 +50,7 @@
             <div>
                 <span>
                     <el-button @click="resetUserDetail()">重 置</el-button>
-                    <el-button type="primary" @click="updateDetail()">修改信息</el-button>
+                    <el-button type="primary" @click="updateDetail()">确认修改</el-button>
                 </span>
             </div>
         </div>

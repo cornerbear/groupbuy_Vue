@@ -1,16 +1,21 @@
 <template>
     <!--tree-->
     <!-- <el-card> -->
-        <!-- :expand-on-click-node="false" -->
+    <!-- :expand-on-click-node="false" -->
+    <div class="header">
+        <el-card>
+            <el-button type="primary" plain @click="add()">
+                增加
+            </el-button>
+        </el-card>
+    </div>
+
     <el-tree :props="treeProps" :data="treeData" show-checkbox node-key="id" :default-expand-all="false"
         :expand-on-click-node="false">
         <template #default="{ node, data }">
             <span class="custom-tree-node">
                 <span>{{node.label}}</span>
                 <span>
-                    <el-button type="text" size="mini" @click="() => append(node,data)">
-                        增加
-                    </el-button>
                     <el-button type="text" size="mini" @click="() => remove(node, data)">
                         删除
                     </el-button>
@@ -29,7 +34,8 @@
                 <el-input v-model="formModel.catName" autocomplete="off"></el-input>
             </el-form-item>
             <el-form-item label="父类别" prop="parentCatId" :label-width="formLabelWidth">
-                <el-cascader v-model="formModel.parentCatId" :options="selectData" :props="selectProps" clearable placeholder="若为根节点，则不选择"></el-cascader>
+                <el-cascader v-model="formModel.parentCatId" :options="selectData" :props="selectProps" clearable
+                    placeholder="若为根节点，则不选择"></el-cascader>
             </el-form-item>
             <el-form-item label="序号" prop="sort" :label-width="formLabelWidth">
                 <el-input v-model="formModel.sort" autocomplete="off"></el-input>
@@ -109,13 +115,12 @@
                 return top
             },
 
-            append(node, data) {
+            add() {
                 this.dialogFormVisible = true;
-                
             },
-            addCategory(form){
+            addCategory(form) {
                 this.formModel.parentCatId = this.formModel.parentCatId[this.formModel.parentCatId.length - 1];
-                axios.post("/admin/category",this.formModel).then((res) => {
+                axios.post("/admin/category", this.formModel).then((res) => {
                     console.log(res)
                 })
             },

@@ -8,7 +8,7 @@
         <div class="header">
             <el-card>
                 <el-button type="primary" plain @click="addDialogVisible=true">
-                    新增员工
+                    新增团长
                 </el-button>
             </el-card>
         </div>
@@ -23,7 +23,7 @@
             <el-table-column label="操作">
                 <template #default="scope">
                     <el-button @click="openScore(scope.row)" type="text" size="small">查看奖惩</el-button>
-                    <el-button @click="deleteStaff(scope.row)" type="text" size="small">删除员工</el-button>
+                    <el-button @click="deleteStaff(scope.row)" type="text" size="small">删除团长</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -49,7 +49,7 @@
             </el-form>
 
             <!-- 上传文件  -->
-            <el-upload class="upload-demo" ref="upload" action="/manager/staff/batch" :on-preview="handlePreview"
+            <el-upload class="upload-demo" ref="upload" action="/manager/grouper/batch" :on-preview="handlePreview"
                 :on-change="handleChange" :on-remove="handleRemove" :file-list="fileList" :auto-upload="false"
                 :http-request="uploadFile" v-if="addStaffMode == 1">
                 <template #trigger>
@@ -198,7 +198,7 @@
             submitUpload() {
                 if (this.addStaffMode == 0) {
                     // 单独新增
-                    this.postRequest("/manager/staff/singleAdd/" + this.addStaffModel.userId).then((resp) => {
+                    this.postRequest("/manager/grouper/singleAdd/" + this.addStaffModel.userId).then((resp) => {
                         if (resp.success) {
                             console.log(resp);
                             this.addDialogVisible = false;
@@ -215,7 +215,7 @@
                         this.fileData = new FormData(); // new formData对象
                         this.$refs.upload.submit(); // 提交调用uploadFile函数
 
-                        this.postRequest("/manager/staff/batchAdd", this.fileData).then((resp) => {
+                        this.postRequest("/manager/grouper/batchAdd", this.fileData).then((resp) => {
                             if (resp.success) {
                                 this.message.warning("其中" + resp.data + "已存在");
                                 this.fileList = [];
@@ -254,7 +254,7 @@
                 this.getTableData(this.pageNo, this.pageSize)
             },
             getTableData(pageNo, pageSize) {
-                this.getRequest("/manager/staff/all/" + pageNo + "/" + pageSize).then((resp) => {
+                this.getRequest("/manager/grouper/all/" + pageNo + "/" + pageSize).then((resp) => {
                     this.tableData = resp.records;
                     this.total = resp.total;
                     this.pageCount = resp.pages;
@@ -262,12 +262,12 @@
             },
 
             deleteStaff(row) {
-                this.$confirm('此操作只会删除该培训员工的员工身份, 是否继续?', '警告', {
+                this.$confirm('此操作只会删除该培训团长的团长身份, 是否继续?', '警告', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     type: 'warning'
                 }).then(() => {
-                    this.deleteRequest("/manager/staff/" + row.userId).then((resp) => {
+                    this.deleteRequest("/manager/grouper/" + row.userId).then((resp) => {
                         this.getTableData(this.pageNo, this.pageSize);
                     });
                 }).catch(() => {

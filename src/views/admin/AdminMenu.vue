@@ -38,6 +38,7 @@
             <el-table :data="tableData" border :fit="true">
                 <el-table-column prop="id" label="ID" />
                 <el-table-column prop="name" label="名称" />
+                <el-table-column prop="sort" label="序号" />
                 <el-table-column prop="component" label="component" />
                 <el-table-column prop="path" label="Path" />
                 <el-table-column prop="parentId" label="父ID" />

@@ -121,7 +121,7 @@
             addCategory(form) {
                 this.formModel.parentCatId = this.formModel.parentCatId[this.formModel.parentCatId.length - 1];
                 axios.post("/admin/category", this.formModel).then((res) => {
-                    console.log(res)
+                    this.dialogFormVisible = false;
                 })
             },
 

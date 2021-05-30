@@ -148,12 +148,23 @@
                     </el-col>
                 </el-row>
                 <el-row>
-                    <el-col :span="12">
-                        <el-form-item label="奖励积分" prop="integral">
-                            <el-input v-model="model.updateModel.integral"></el-input>
+                    <el-col :span="24">
+                        <el-form-item label="类别" prop="goodsCat">
+                            <el-cascader style="width: 200px;" size="medium" :options="categoryOptions.oneData"
+                                v-model="category.one" @change="changeOneCat" placeholder="">
+                            </el-cascader>
+                            <el-cascader style="width: 200px;" size="medium" :options="categoryOptions.twoData"
+                                v-model="category.two" @change="changeTwoCat" placeholder="">
+                            </el-cascader>
+                            <el-cascader style="width: 200px;" size="medium" :options="categoryOptions.threeData"
+                                v-model="category.three" @change="changeThreeCat" ref="threeRef" placeholder="">
+                            </el-cascader>
                         </el-form-item>
+                        <!-- <el-form-item label="奖励积分" prop="integral">
+                            <el-input v-model="model.updateModel.integral"></el-input>
+                        </el-form-item> -->
                     </el-col>
-                    <el-col :span="12"></el-col>
+                    <!-- <el-col :span="12"></el-col> -->
                 </el-row>
                 <el-row>
 
@@ -209,6 +220,16 @@
                         { required: true, message: '请填写商品名称', trigger: 'blur' }
                     ]
                 },
+                category: {
+                    one: null,
+                    two: null,
+                    three: null,
+                },
+                categoryOptions: {
+                    oneData: null,
+                    twoData: null,
+                    threeData: null,
+                },
             }
         },
         methods: {
@@ -249,8 +270,46 @@
                         this.visible.update = true;
                         this.imgUrl = '/file/image?filePath=' + encodeURI(resp.data.goodsImg);
                         this.model.updateModel = resp.data;
+
+                        this.category.three = resp.data.goodsCat;
+
+                        this.getRequest("/store/goods/category/" + resp.data.goodsCat).then((resp) => {
+                            this.categoryOptions.oneData = resp.data.oneOptions;
+                            this.category.one = null;
+                            this.categoryOptions.twoData = resp.data.twoOptions;
+                            this.category.two = null;
+                            this.categoryOptions.threeData = resp.data.threeOptions;
+                            this.category.three = null;
+
+                            if (resp.data.checkPath != undefined) {
+                                this.category.one = resp.data.checkPath.one;
+                                this.category.two = resp.data.checkPath.two;
+                                this.category.three = resp.data.checkPath.three;
+
+                                this.getRequest("/store/goods/category/three/" + this.category.three).then((resp) => {
+                                    this.categoryOptions.communityData = resp.data;
+                                })
+                            }
+                        });
                     }
                 });
+            },
+            changeOneCat() {
+                this.getRequest("/store/goods/category/two/" + this.category.one).then((resp) => {
+                    this.categoryOptions.twoData = resp.data;
+                    this.category.two = null;
+                    this.categoryOptions.threeData = null;
+                    this.category.three = null;
+                })
+            },
+            changeTwoCat() {
+                this.getRequest("/store/goods/category/two/" + this.category.two).then((resp) => {
+                    this.categoryOptions.threeData = resp.data;
+                    this.category.three = null;
+                })
+            },
+            changeThreeCat(value) {
+                this.model.updateModel.goodsCat = value[0];
             },
             // 覆盖上传事件，选择文件之后触发的事件
             uploadFile(file) {
